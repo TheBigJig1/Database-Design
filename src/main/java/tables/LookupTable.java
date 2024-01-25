@@ -18,35 +18,37 @@ public class LookupTable implements Table {
 	private List<String> columns;
 	private int degree;
 
-	// TODO: This constructor has 3 initialization errors.
+	// TODO: This constructor has 2 initialization errors.
 	public LookupTable(String name, List<String> columns) {
+		this.name = name;
 		clear();
 	}
 
-	// TODO: This method has 1 value error.
 	@Override
 	public void clear() {
-		rows = new Row[26];
+		rows = new Row[52];
 	}
 
 	// TODO: This helper method has 1 logic error.
 	private int indexOf(String key) {
-		if (key.length() < 1)
+		if (key.length() < 1) {
 			throw new IllegalArgumentException("Key must be at least 1 character");
+		}
 
 		char c = key.charAt(0);
-		if (c >= 'a' && c <= 'z')
+		if (c >= 'a' && c <= 'z') {
 			return c - 'a';
-		else
+		} else {
 			throw new IllegalArgumentException("Key must start with a lowercase or uppercase letter");
+		}
 	}
 
 	// TODO: This method is missing 1 guard condition.
-	// TODO: This method has 1 assignment error.
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
-		if (1 + fields.size() < degree)
+		if (1 + fields.size() < degree) {
 			throw new IllegalArgumentException("Row is too narrow");
+		}
 
 		int i = indexOf(key);
 
@@ -57,7 +59,9 @@ public class LookupTable implements Table {
 			rows[i] = make;
 			return old.fields();
 		}
-
+		
+		//Where does it put the row
+		rows[i] = make;
 		return null;
 	}
 
@@ -92,8 +96,11 @@ public class LookupTable implements Table {
 	@Override
 	public int size() {
 		int size = 0;
-		for (Row row: rows)
-			size++;
+		for (Row row: rows) {
+			if(row != null) {
+				size++;
+			}
+		}
 		return size;
 	}
 
@@ -101,9 +108,11 @@ public class LookupTable implements Table {
 	@Override
 	public int hashCode() {
 		int fingerprint = 0;
-		for (Row row: rows)
-			if (row != null)
+		for (Row row: rows) {
+			if (row != null) {
 				fingerprint = row.key().hashCode() ^ row.fields().hashCode();
+			}
+		}
 		return fingerprint;
 	}
 
@@ -117,10 +126,9 @@ public class LookupTable implements Table {
 		throw new UnsupportedOperationException();
 	}
 
-	// TODO: This method has 1 result error.
 	@Override
 	public String name() {
-		return null;
+		return name;
 	}
 
 	// TODO: This method has 1 result error.
@@ -132,9 +140,11 @@ public class LookupTable implements Table {
 	@Override
 	public String toString() {
 		var sj = new StringJoiner(", ", name() + "<" + columns().get(0) + "=" + columns().subList(1, degree) + ">{", "}");
-		for (var row: rows)
-			if (row != null)
+		for (var row: rows) {
+			if (row != null) {
 				sj.add(row.key() + "=" + row.fields());
+			}
+		}
 		return sj.toString();
 	}
 }

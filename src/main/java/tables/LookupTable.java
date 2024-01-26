@@ -1,14 +1,5 @@
 package tables;
 
-// Bring up why my debug perspective is whack
-// 
-
-// Turn in information is around 43:17 on module 0 Q 4 video
-// To tag, go to history and right click on most recent commit
-// To submit everything.  Remotes -> origin -> Push: in popup window verify new tag and commit 
-// On ecampus, submit the 'link of the main page of my origin repository' as a text submission
-// Include screenshot of: unit test pass rate, IDE with visible full history of project, package explorer, github commits and tags pages
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;

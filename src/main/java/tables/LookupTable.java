@@ -21,6 +21,7 @@ public class LookupTable implements Table {
 	// TODO: This constructor has 2 initialization errors.
 	public LookupTable(String name, List<String> columns) {
 		this.name = name;
+		this.columns = columns;
 		clear();
 	}
 
@@ -38,6 +39,8 @@ public class LookupTable implements Table {
 		char c = key.charAt(0);
 		if (c >= 'a' && c <= 'z') {
 			return c - 'a';
+		} else if (c >= 'A' && c <= 'Z') {
+			return c - 'A';
 		} else {
 			throw new IllegalArgumentException("Key must start with a lowercase or uppercase letter");
 		}
@@ -46,6 +49,7 @@ public class LookupTable implements Table {
 	// TODO: This method is missing 1 guard condition.
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
+			
 		if (1 + fields.size() < degree) {
 			throw new IllegalArgumentException("Row is too narrow");
 		}
@@ -70,10 +74,13 @@ public class LookupTable implements Table {
 	public List<Object> get(String key) {
 		int i = indexOf(key);
 
-		return rows[i].fields();
+		return rows[i].fields(); //assumes a hit.  Never checks for a miss.  Needs similar logic from 61-55
 	}
 
 	// TODO: This method has 1 result error.
+	// Compare to "put" method.  Put method creates temp of old array before changing so it can return old.
+	// Remove needs this implemenation
+	// In unit test, will show up as returning new value instead of old value
 	@Override
 	public List<Object> remove(String key) {
 		int i = indexOf(key);
@@ -105,6 +112,9 @@ public class LookupTable implements Table {
 	}
 
 	// TODO: This method has 1 assignment error.
+	// This is supposed to start fingerprint out at zero
+	// Then for each row that isn't null, set the fingerprint equal to fingerprint += row.key().hashCode() ^ row.fields().hashCode()
+	
 	@Override
 	public int hashCode() {
 		int fingerprint = 0;

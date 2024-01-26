@@ -1,5 +1,14 @@
 package tables;
 
+// Bring up why my pass rate doesnt show up in the console 
+// 
+
+// Turn in information is around 43:17 on module 0 Q 4 video
+// To tag, go to history and right click on most recent commit
+// To submit everything.  Remotes -> origin -> Push: in popup window verify new tag and commit 
+// On ecampus, submit the 'link of the main page of my origin repository' as a text submission
+// Include screenshot of: unit test pass rate, IDE with visible full history of project, package explorer, github commits and tags pages
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
@@ -19,6 +28,7 @@ public class LookupTable implements Table {
 	private int degree;
 
 	// TODO: This constructor has 2 initialization errors.
+	// I think columns is still one of them
 	public LookupTable(String name, List<String> columns) {
 		this.name = name;
 		this.columns = columns;
@@ -31,6 +41,7 @@ public class LookupTable implements Table {
 	}
 
 	// TODO: This helper method has 1 logic error.
+	// Something is wrong with my c - 'A' call I think and im not totally sure what
 	private int indexOf(String key) {
 		if (key.length() < 1) {
 			throw new IllegalArgumentException("Key must be at least 1 character");
@@ -46,10 +57,14 @@ public class LookupTable implements Table {
 		}
 	}
 
-	// TODO: This method is missing 1 guard condition.
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
-			
+		
+		// I believe this is the missing guard condition
+		
+		if(fields == null) {
+			throw new IllegalArgumentException("Fields cannot be null");
+		}
 		if (1 + fields.size() < degree) {
 			throw new IllegalArgumentException("Row is too narrow");
 		}
@@ -64,17 +79,21 @@ public class LookupTable implements Table {
 			return old.fields();
 		}
 		
-		//Where does it put the row
 		rows[i] = make;
 		return null;
 	}
 
-	// TODO: This method has 1 logic error.
 	@Override
 	public List<Object> get(String key) {
 		int i = indexOf(key);
 
-		return rows[i].fields(); //assumes a hit.  Never checks for a miss.  Needs similar logic from 61-55
+		// I believe this code has fixed the error
+		
+		if (rows[i] != null) {
+			return null;
+		}
+		
+		return rows[i].fields(); //assumes a hit.  Never checks for a miss.  Needs similar logic from previous method
 	}
 
 	// TODO: This method has 1 result error.
@@ -93,10 +112,15 @@ public class LookupTable implements Table {
 		return null;
 	}
 
-	// TODO: This method has 1 result error.
 	@Override
 	public int degree() {
-		return 0;
+		int deg = 0;
+		
+		for(String col: columns) {
+			deg++;
+		}
+		
+		return deg;
 	}
 
 	// TODO: This method has 1 logic error.
@@ -112,15 +136,12 @@ public class LookupTable implements Table {
 	}
 
 	// TODO: This method has 1 assignment error.
-	// This is supposed to start fingerprint out at zero
-	// Then for each row that isn't null, set the fingerprint equal to fingerprint += row.key().hashCode() ^ row.fields().hashCode()
-	
 	@Override
 	public int hashCode() {
 		int fingerprint = 0;
 		for (Row row: rows) {
 			if (row != null) {
-				fingerprint = row.key().hashCode() ^ row.fields().hashCode();
+				fingerprint += row.key().hashCode() ^ row.fields().hashCode();
 			}
 		}
 		return fingerprint;

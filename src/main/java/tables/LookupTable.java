@@ -1,6 +1,6 @@
 package tables;
 
-// Bring up why my pass rate doesnt show up in the console 
+// Bring up why my debug perspective is whack
 // 
 
 // Turn in information is around 43:17 on module 0 Q 4 video
@@ -27,8 +27,7 @@ public class LookupTable implements Table {
 	private List<String> columns;
 	private int degree;
 
-	// TODO: This constructor has 2 initialization errors.
-	// I think columns is still one of them
+	// TODO: This constructor has 1 initialization error.
 	public LookupTable(String name, List<String> columns) {
 		this.name = name;
 		this.columns = columns;
@@ -40,8 +39,7 @@ public class LookupTable implements Table {
 		rows = new Row[52];
 	}
 
-	// TODO: This helper method has 1 logic error.
-	// Something is wrong with my c - 'A' call I think and im not totally sure what
+	
 	private int indexOf(String key) {
 		if (key.length() < 1) {
 			throw new IllegalArgumentException("Key must be at least 1 character");
@@ -65,6 +63,9 @@ public class LookupTable implements Table {
 		if(fields == null) {
 			throw new IllegalArgumentException("Fields cannot be null");
 		}
+		
+		// I hope
+		
 		if (1 + fields.size() < degree) {
 			throw new IllegalArgumentException("Row is too narrow");
 		}
@@ -93,7 +94,7 @@ public class LookupTable implements Table {
 			return null;
 		}
 		
-		return rows[i].fields(); //assumes a hit.  Never checks for a miss.  Needs similar logic from previous method
+		return rows[i].fields();
 	}
 
 	// TODO: This method has 1 result error.
@@ -105,8 +106,9 @@ public class LookupTable implements Table {
 		int i = indexOf(key);
 
 		if (rows[i] != null) {
+			Row old = rows[i]; //This MIGHT have fixed it
 			rows[i] = null;
-			return rows[i].fields();
+			return old.fields();
 		}
 
 		return null;
@@ -123,7 +125,6 @@ public class LookupTable implements Table {
 		return deg;
 	}
 
-	// TODO: This method has 1 logic error.
 	@Override
 	public int size() {
 		int size = 0;
@@ -135,7 +136,6 @@ public class LookupTable implements Table {
 		return size;
 	}
 
-	// TODO: This method has 1 assignment error.
 	@Override
 	public int hashCode() {
 		int fingerprint = 0;

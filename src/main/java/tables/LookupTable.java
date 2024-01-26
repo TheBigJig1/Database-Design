@@ -27,10 +27,11 @@ public class LookupTable implements Table {
 	private List<String> columns;
 	private int degree;
 
-	// TODO: This constructor has 1 initialization error.
+	
 	public LookupTable(String name, List<String> columns) {
 		this.name = name;
 		this.columns = columns;
+		this.degree = this.columns.size();
 		clear();
 	}
 
@@ -49,7 +50,7 @@ public class LookupTable implements Table {
 		if (c >= 'a' && c <= 'z') {
 			return c - 'a';
 		} else if (c >= 'A' && c <= 'Z') {
-			return c - 'A';
+			return (c - 'A') + 26;
 		} else {
 			throw new IllegalArgumentException("Key must start with a lowercase or uppercase letter");
 		}
@@ -58,16 +59,13 @@ public class LookupTable implements Table {
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
 		
-		// I believe this is the missing guard condition
-		
-		if(fields == null) {
-			throw new IllegalArgumentException("Fields cannot be null");
-		}
-		
-		// I hope
 		
 		if (1 + fields.size() < degree) {
 			throw new IllegalArgumentException("Row is too narrow");
+		}
+		
+		if (1 + fields.size() > degree) {
+			throw new IllegalArgumentException("Row is too large");
 		}
 
 		int i = indexOf(key);
@@ -87,26 +85,20 @@ public class LookupTable implements Table {
 	@Override
 	public List<Object> get(String key) {
 		int i = indexOf(key);
-
-		// I believe this code has fixed the error
 		
 		if (rows[i] != null) {
-			return null;
+			return rows[i].fields();
 		}
 		
-		return rows[i].fields();
+		return null;
 	}
 
-	// TODO: This method has 1 result error.
-	// Compare to "put" method.  Put method creates temp of old array before changing so it can return old.
-	// Remove needs this implemenation
-	// In unit test, will show up as returning new value instead of old value
 	@Override
 	public List<Object> remove(String key) {
 		int i = indexOf(key);
 
 		if (rows[i] != null) {
-			Row old = rows[i]; //This MIGHT have fixed it
+			Row old = rows[i];
 			rows[i] = null;
 			return old.fields();
 		}
@@ -162,10 +154,9 @@ public class LookupTable implements Table {
 		return name;
 	}
 
-	// TODO: This method has 1 result error.
 	@Override
 	public List<String> columns() {
-		return null;
+		return this.columns;
 	}
 
 	@Override

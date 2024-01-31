@@ -6,12 +6,17 @@ import java.util.List;
 import model.DataTable;
 import model.Row;
 
+// Need to ask how I sync my github with the template
+// For example, all the new src/test/config or Harness or Module1
+
 public class SearchTable implements DataTable {
 	/*
 	 * TODO: For Module 1, finish this stub.
 	 */
 
 	public SearchTable(String name, List<String> columns) {
+		// To make an unmodifiable copy of the columns, the method 
+		// i'm looking for is in the List class.  As in: List.xxxx
 		throw new UnsupportedOperationException();
 	}
 

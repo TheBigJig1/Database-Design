@@ -4,10 +4,20 @@ public interface DataTable extends Table {
 	public int capacity();
 
 	public default boolean isFull() {
-		throw new UnsupportedOperationException();
+		
+		if(this.size() == this.capacity()) {
+			return true;
+		} else {
+			return false;
+		}
+		
+		//throw new UnsupportedOperationException();
 	}
 
 	public default double loadFactor() {
-		throw new UnsupportedOperationException();
+		
+		return (double)this.size()/this.capacity();
+		
+		//throw new UnsupportedOperationException();
 	}
 }

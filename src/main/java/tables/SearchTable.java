@@ -7,25 +7,38 @@ import model.DataTable;
 import model.Row;
 
 
-// Need to ask how I sync my github with the template
-// For example, all the new src/test/config or Harness or Module1
-
-
 public class SearchTable implements DataTable {
 	/*
 	 * TODO: For Module 1, finish this stub.
 	 */
+	
+	// 1.A complete
+	private Row[] rows;
+	private String name;
+	private List<String> columns;
+	private int degree; // Key + columns
+	private int size; // Current number of rows
+	private int capacity; // Max possible number of rows
+	private static int initialCapacity = 16; // Initial Capacity
 
 	public SearchTable(String name, List<String> columns) {
-
-		// To make an unmodifiable copy of the columns, the method 
-		// i'm looking for is in the List class.  As in: List.xxxx
+		
+		// 1.B complete
+		this.name = name;
+		this.columns = List.copyOf(columns);
+		this.degree = columns.size();
+		clear();
 
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void clear() {
+		
+		// 1.C complete
+		capacity = initialCapacity;
+		rows = new Row[capacity];
+		
 		throw new UnsupportedOperationException();
 	}
 
@@ -46,12 +59,14 @@ public class SearchTable implements DataTable {
 
 	@Override
 	public int degree() {
-		throw new UnsupportedOperationException();
+		return this.degree;
+		//throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public int size() {
-		throw new UnsupportedOperationException();
+		return this.size;
+		//throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -61,7 +76,8 @@ public class SearchTable implements DataTable {
 
 	@Override
 	public int capacity() {
-		throw new UnsupportedOperationException();
+		return this.capacity;
+		//throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -98,12 +114,16 @@ public class SearchTable implements DataTable {
 
 	@Override
 	public String name() {
-		throw new UnsupportedOperationException();
+		return this.name;
+		
+		//throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public List<String> columns() {
-		throw new UnsupportedOperationException();
+		return this.columns;
+		
+		//throw new UnsupportedOperationException();
 	}
 
 	@Override

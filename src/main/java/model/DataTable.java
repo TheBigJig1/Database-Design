@@ -10,14 +10,11 @@ public interface DataTable extends Table {
 		} else {
 			return false;
 		}
-		
-		//throw new UnsupportedOperationException();
 	}
 
 	public default double loadFactor() {
 		
 		return (double)this.size()/this.capacity();
 		
-		//throw new UnsupportedOperationException();
 	}
 }

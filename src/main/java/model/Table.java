@@ -27,8 +27,6 @@ public interface Table extends Iterable<Row> {
 		} else {
 			return false;
 		}
-		
-		//throw new UnsupportedOperationException();
 	}
 
 	@Override

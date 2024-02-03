@@ -29,17 +29,13 @@ public class SearchTable implements DataTable {
 		this.degree = columns.size();
 		clear();
 
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void clear() {
-		
 		// 1.C complete
 		capacity = initialCapacity;
 		rows = new Row[capacity];
-		
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -60,13 +56,11 @@ public class SearchTable implements DataTable {
 	@Override
 	public int degree() {
 		return this.degree;
-		//throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public int size() {
 		return this.size;
-		//throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -77,7 +71,6 @@ public class SearchTable implements DataTable {
 	@Override
 	public int capacity() {
 		return this.capacity;
-		//throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -115,15 +108,11 @@ public class SearchTable implements DataTable {
 	@Override
 	public String name() {
 		return this.name;
-		
-		//throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public List<String> columns() {
 		return this.columns;
-		
-		//throw new UnsupportedOperationException();
 	}
 
 	@Override

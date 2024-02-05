@@ -12,8 +12,13 @@ public interface Table extends Iterable<Row> {
 
 	public List<Object> remove(String key);
 
+	//2.J complete
 	public default boolean contains(String key) {
-		throw new UnsupportedOperationException();
+		if(this.get(key) != null) {
+			return true; 
+		} else {
+			return false;
+		}
 	}
 
 	public int degree();

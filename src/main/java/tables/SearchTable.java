@@ -1,5 +1,6 @@
 package tables;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class SearchTable implements DataTable {
 	private int size; // Current number of rows
 	private int capacity; // Max possible number of rows
 	private static int initialCapacity = 16; // Initial Capacity
+	private int fingerPrint; // Set fingerprint of table
 
 	public SearchTable(String name, List<String> columns) {
 		
@@ -34,23 +36,76 @@ public class SearchTable implements DataTable {
 	@Override
 	public void clear() {
 		// 1.C complete
-		capacity = initialCapacity;
+		this.capacity = initialCapacity;
 		rows = new Row[capacity];
+		this.size = 0;
+		this.fingerPrint = 0;
 	}
 
+	// 2.G complete
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
-		throw new UnsupportedOperationException();
+		// Throw illegal argument if sizes do not match
+		if(1+fields.size() != degree) {
+			throw new IllegalArgumentException();
+		}
+		
+		// Create new row
+		Row next = new Row(key, fields);
+		
+		// Hit
+		for(int i = 0; i < size; i++) {
+			if(rows[i].key().equals(key)) {
+				Row temp = rows[i];
+				rows[i] = next;
+				return temp.fields();
+			}
+		}
+		
+		// Miss
+		if (size < capacity) {
+            rows[size] = next;
+        } else {
+        	capacity = capacity * 2;
+            rows = Arrays.copyOf(rows, capacity);
+            rows[size] = next;
+        }
+        size++;
+        return null;
+		
 	}
 
+	// 2.H complete
 	@Override
 	public List<Object> get(String key) {
-		throw new UnsupportedOperationException();
+		// Linear search for key
+		for(int i = 0; i < size; i++) {
+			// Hit
+			if(rows[i].key().equals(key)) {
+				return rows[i].fields();
+			}
+		}
+		
+		// Miss
+		return null;
 	}
 
+	// 2.I complete
 	@Override
 	public List<Object> remove(String key) {
-		throw new UnsupportedOperationException();
+		// Hit
+		for(int i = 0; i < size; i++) {
+			if(rows[i].key().equals(key)) {
+				Row temp = rows[i];
+				rows[i] = rows[size];
+				rows[size] = null;
+				return temp.fields();
+			}
+		}
+		
+		// Miss
+		return null;
+		
 	}
 
 	@Override

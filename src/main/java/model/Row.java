@@ -10,4 +10,11 @@ public record Row(String key, List<Object> fields) {
 		return key + ":" + fields;
 	}
 	
+	// 3.N complete
+	@Override
+	public int hashCode() {
+        
+		return (this.key.hashCode() ^ this.fields.hashCode());
+	}
+	
 }

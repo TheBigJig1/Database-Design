@@ -3,6 +3,7 @@ package tables;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import model.DataTable;
 import model.Row;
@@ -13,7 +14,7 @@ public class SearchTable implements DataTable {
 	 * TODO: For Module 1, finish this stub.
 	 */
 	
-	// 1.A complete
+	// 1.A & 3.K complete
 	private Row[] rows;
 	private String name;
 	private List<String> columns;
@@ -33,9 +34,9 @@ public class SearchTable implements DataTable {
 
 	}
 
+	// 1.C & 3.L complete
 	@Override
 	public void clear() {
-		// 1.C complete
 		this.capacity = initialCapacity;
 		rows = new Row[capacity];
 		this.size = 0;
@@ -47,30 +48,33 @@ public class SearchTable implements DataTable {
 	public List<Object> put(String key, List<Object> fields) {
 		// Throw illegal argument if sizes do not match
 		if(1+fields.size() != degree) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Row size does not match");
 		}
 		
 		// Create new row
-		Row next = new Row(key, fields);
+		Row make = new Row(key, fields);
 		
 		// Hit
 		for(int i = 0; i < size; i++) {
-			if(rows[i].key().equals(key)) {
+			if(rows[i] != null && rows[i].key().equals(key)) {
 				Row temp = rows[i];
-				rows[i] = next;
+				rows[i] = make;					
+				this.fingerPrint -= temp.hashCode();
+				this.fingerPrint += make.hashCode();
 				return temp.fields();
 			}
 		}
 		
 		// Miss
-		if (size < capacity) {
-            rows[size] = next;
+		if (this.size < this.capacity) {
+            rows[size] = make;
         } else {
         	capacity = capacity * 2;
             rows = Arrays.copyOf(rows, capacity);
-            rows[size] = next;
+            rows[size] = make;
         }
-        size++;
+		this.size++;
+        this.fingerPrint += make.hashCode();
         return null;
 		
 	}
@@ -99,6 +103,7 @@ public class SearchTable implements DataTable {
 				Row temp = rows[i];
 				rows[i] = rows[size];
 				rows[size] = null;
+				this.fingerPrint -= temp.hashCode();
 				return temp.fields();
 			}
 		}
@@ -118,44 +123,59 @@ public class SearchTable implements DataTable {
 		return this.size;
 	}
 
+	/*
 	@Override
 	public boolean isEmpty() {
 		throw new UnsupportedOperationException();
-	}
+	}*/
 
 	@Override
 	public int capacity() {
 		return this.capacity;
 	}
 
+	/*
 	@Override
 	public double loadFactor() {
 		throw new UnsupportedOperationException();
-	}
+	}*/
 
 	@Override
 	public int hashCode() {
-		throw new UnsupportedOperationException();
+		return this.fingerPrint;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		throw new UnsupportedOperationException();
+		if(obj.hashCode() == this.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	public Iterator<Row> iterator() {
 		return new Iterator<>() {
-
+			private int currentIndex = 0;
 
 			@Override
 			public boolean hasNext() {
-				throw new UnsupportedOperationException();
+				if(currentIndex < size) {
+					return true;
+				} else {
+					return false;
+				}
 			}
 
 			@Override
 			public Row next() {
-				throw new UnsupportedOperationException();
+				if(hasNext() == false) {
+					throw new NoSuchElementException();
+				} else {
+					currentIndex++;
+					return rows[currentIndex-1];
+				}
 			}
 		};
 	}

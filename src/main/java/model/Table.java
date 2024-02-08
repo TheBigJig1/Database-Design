@@ -26,7 +26,6 @@ public interface Table extends Iterable<Row> {
 	public int size();
 
 	public default boolean isEmpty() {
-		
 		if(this.size() == 0) {
 			return true;
 		} else {

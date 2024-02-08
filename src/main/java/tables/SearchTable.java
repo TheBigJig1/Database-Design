@@ -37,10 +37,10 @@ public class SearchTable implements DataTable {
 	// 1.C & 3.L complete
 	@Override
 	public void clear() {
-		this.capacity = initialCapacity;
+		capacity = initialCapacity;
 		rows = new Row[capacity];
-		this.size = 0;
-		this.fingerPrint = 0;
+		size = 0;
+		fingerPrint = 0;
 	}
 
 	// 2.G complete
@@ -101,8 +101,8 @@ public class SearchTable implements DataTable {
 		for(int i = 0; i < size; i++) {
 			if(rows[i] != null && rows[i].key().equals(key)) {
 				Row temp = rows[i];
-				rows[i] = rows[size];
-				rows[size] = null;
+				rows[i] = rows[size-1];
+				rows[size-1] = null;
 				this.fingerPrint -= temp.hashCode();
 				this.size--;
 				return temp.fields();
@@ -124,11 +124,11 @@ public class SearchTable implements DataTable {
 		return this.size;
 	}
 
-	/*
+	
 	@Override
 	public boolean isEmpty() {
 		throw new UnsupportedOperationException();
-	}*/
+	}
 
 	@Override
 	public int capacity() {
@@ -162,11 +162,7 @@ public class SearchTable implements DataTable {
 
 			@Override
 			public boolean hasNext() {
-				if(currentIndex < size) {
-					return true;
-				} else {
-					return false;
-				}
+				return currentIndex < size;
 			}
 
 			@Override

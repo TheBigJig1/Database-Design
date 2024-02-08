@@ -58,7 +58,7 @@ public class SearchTable implements DataTable {
 		for(int i = 0; i < size; i++) {
 			if(rows[i] != null && rows[i].key().equals(key)) {
 				Row temp = rows[i];
-				rows[i] = make;					
+				rows[i] = make;
 				this.fingerPrint -= temp.hashCode();
 				this.fingerPrint += make.hashCode();
 				return temp.fields();
@@ -85,7 +85,7 @@ public class SearchTable implements DataTable {
 		// Linear search for key
 		for(int i = 0; i < size; i++) {
 			// Hit
-			if(rows[i].key().equals(key)) {
+			if(rows[i] != null && rows[i].key().equals(key)) {
 				return rows[i].fields();
 			}
 		}
@@ -99,11 +99,12 @@ public class SearchTable implements DataTable {
 	public List<Object> remove(String key) {
 		// Hit
 		for(int i = 0; i < size; i++) {
-			if(rows[i].key().equals(key)) {
+			if(rows[i] != null && rows[i].key().equals(key)) {
 				Row temp = rows[i];
 				rows[i] = rows[size];
 				rows[size] = null;
 				this.fingerPrint -= temp.hashCode();
+				this.size--;
 				return temp.fields();
 			}
 		}

@@ -29,7 +29,7 @@ public class SearchTable implements DataTable {
 		// 1.B complete
 		this.name = name;
 		this.columns = List.copyOf(columns);
-		this.degree = columns.size();
+		degree = columns.size();
 		clear();
 
 	}
@@ -59,22 +59,22 @@ public class SearchTable implements DataTable {
 			if(rows[i] != null && rows[i].key().equals(key)) {
 				Row temp = rows[i];
 				rows[i] = make;
-				this.fingerPrint -= temp.hashCode();
-				this.fingerPrint += make.hashCode();
+				fingerPrint -= temp.hashCode();
+				fingerPrint += make.hashCode();
 				return temp.fields();
 			}
 		}
 		
 		// Miss
-		if (this.size < this.capacity) {
+		if (size < capacity) {
             rows[size] = make;
         } else {
         	capacity = capacity * 2;
             rows = Arrays.copyOf(rows, capacity);
             rows[size] = make;
         }
-		this.size++;
-        this.fingerPrint += make.hashCode();
+		size++;
+        fingerPrint += make.hashCode();
         return null;
 		
 	}
@@ -103,8 +103,8 @@ public class SearchTable implements DataTable {
 				Row temp = rows[i];
 				rows[i] = rows[size-1];
 				rows[size-1] = null;
-				this.fingerPrint -= temp.hashCode();
-				this.size--;
+				fingerPrint -= temp.hashCode();
+				size--;
 				return temp.fields();
 			}
 		}
@@ -116,12 +116,12 @@ public class SearchTable implements DataTable {
 
 	@Override
 	public int degree() {
-		return this.degree;
+		return degree;
 	}
 
 	@Override
 	public int size() {
-		return this.size;
+		return size;
 	}
 
 	
@@ -132,7 +132,7 @@ public class SearchTable implements DataTable {
 
 	@Override
 	public int capacity() {
-		return this.capacity;
+		return capacity;
 	}
 
 	/*
@@ -143,7 +143,7 @@ public class SearchTable implements DataTable {
 
 	@Override
 	public int hashCode() {
-		return this.fingerPrint;
+		return fingerPrint;
 	}
 
 	@Override
@@ -179,17 +179,17 @@ public class SearchTable implements DataTable {
 
 	@Override
 	public String name() {
-		return this.name;
+		return name;
 	}
 
 	@Override
 	public List<String> columns() {
-		return this.columns;
+		return columns;
 	}
 
 	@Override
 	public String toString() {
-		throw new UnsupportedOperationException();
+		return toTabularView(true);
 	}
 
 }

@@ -2,7 +2,7 @@ package model;
 
 import java.util.List;
 
-public record Row(String key, List<Object> fields) {
+public record Row(String key, List<Object> fields) implements Comparable<Row> {
 
 	// 1.E complete
 	@Override
@@ -14,7 +14,11 @@ public record Row(String key, List<Object> fields) {
 	@Override
 	public int hashCode() {
         
-		return (this.key.hashCode() ^ this.fields.hashCode());
+		return (key.hashCode() ^ fields.hashCode());
 	}
-	
+
+	@Override
+	public int compareTo(Row param) {
+		return key.compareTo(param.key());
+	}
 }

@@ -1,5 +1,7 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,7 +28,7 @@ public interface Table extends Iterable<Row> {
 	public int size();
 
 	public default boolean isEmpty() {
-		if(this.size() == 0) {
+		if(size() == 0) {
 			return true;
 		} else {
 			return false;
@@ -50,6 +52,55 @@ public interface Table extends Iterable<Row> {
 	public String toString();
 
 	public default String toTabularView(boolean sorted) {
-		throw new UnsupportedOperationException();
+		StringBuilder sb = new StringBuilder();
+		List<Row> rowList = new ArrayList<Row>();
+		sb.append(String.format("| %-15s |\n", name()));
+		StringBuilder seperator = new StringBuilder();
+		boolean isNumber;
+		
+		for(Row row: this) {
+			rowList.add(row);
+		}
+		
+		for(int i = 0; i < degree(); i++) {
+			seperator.append("------------------");
+		}
+		
+		if(sorted) {
+			Collections.sort(rowList);
+		}
+		
+		sb.append(seperator.toString());
+		sb.append("--\n");
+		
+		for(Object col: this.columns()) {
+			sb.append(String.format("| %-15s ", col));
+		}
+		sb.append(" |\n");
+		sb.append(seperator.toString());
+		sb.append("--\n");
+		
+		
+		for(int i = 0; i <= 2*size(); i++) {
+			
+			if(i%2 == 0) {
+				sb.append(seperator.toString());
+				sb.append("--\n");
+			} else {
+				Row row = rowList.get(i/2);
+				List<Object> cols = new ArrayList<>(row.fields());
+				sb.append(String.format("| %-15s ", row.key()));
+				
+				for(int j = 0; j < degree()-1; j++) {
+					sb.append(String.format("| %-15s ", cols.get(j)));
+				}
+				
+				sb.append(" |\n");
+			}
+			
+		}
+		
+		String finalView = sb.toString();
+		return finalView;
 	}
 }

@@ -89,16 +89,44 @@ public interface Table extends Iterable<Row> {
 			} else {
 				Row row = rowList.get(i/2);
 				List<Object> cols = new ArrayList<>(row.fields());
-				sb.append(String.format("| %-15s ", row.key()));
+				
+				try {
+					double value = Double.parseDouble(row.key());
+					sb.append(String.format("| %15.2f ", value));
+				} catch (NumberFormatException e) {
+					String str = row.key();
+					if(str.length() > 15) {
+						str = str.substring(0,15);
+					}
+					sb.append(String.format("| %-15s ", row.key()));
+				}
 				
 				for(int j = 0; j < degree()-1; j++) {
-					sb.append(String.format("| %-15s ", cols.get(j)));
+					if(cols.get(j) == null){
+						sb.append(String.format("|                 ", cols.get(j)));
+					}
+					
+					try {
+						double value = Double.parseDouble((String) cols.get(j));
+						sb.append(String.format("| %15.2f ", value));
+					} catch (NumberFormatException e) {
+						String str = (String)cols.get(j);
+						if(str.length() > 15) {
+							str = str.substring(0,15);
+						}
+						sb.append(String.format("| %-15s ", str));
+					}
 				}
 				
 				sb.append(" |\n");
 			}
 			
 		}
+		/*
+		 * for(int j = 0; j < degree()-1; j++) {
+					sb.append(String.format("| %-15s ", cols.get(j)));
+				}
+		 */
 		
 		String finalView = sb.toString();
 		return finalView;

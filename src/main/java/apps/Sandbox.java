@@ -11,10 +11,11 @@ public class Sandbox {
 		 * or demonstrate arbitrary code.
 		 */
 
-		SearchTable test1 = new SearchTable("Animals", List.of("Key", "1", "2", "3", "4"));
-		test1.put("Dog", List.of("mammal", "4", "5", "6"));
-		test1.put("Cat", List.of("mammal", "4", "5", "6"));
-		test1.put("Lizard", List.of("Reptile", "4", "5", "6"));
+		SearchTable test1 = new SearchTable("Animals", List.of("Name", "species", "breed", "age"));
+		test1.put("Buddy", List.of("Dog", "Beagle", "12"));
+		test1.put("Tilly", List.of("Dog", "Foxhound", "13"));
+		test1.put("Ash", List.of("Dog", "Labrador Retriver", "8"));
+		test1.put("Felix", List.of("Cat", "Bombeii", "6"));
 		
 		System.out.print(test1);
 	}

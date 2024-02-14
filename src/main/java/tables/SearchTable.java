@@ -21,7 +21,7 @@ public class SearchTable implements DataTable {
 	private int degree; // Key + columns
 	private int size; // Current number of rows
 	private int capacity; // Max possible number of rows
-	private static int initialCapacity = 16; // Initial Capacity
+	private final int initialCapacity = 16; // Initial Capacity
 	private int fingerPrint; // Set fingerprint of table
 
 	public SearchTable(String name, List<String> columns) {
@@ -56,7 +56,7 @@ public class SearchTable implements DataTable {
 		
 		// Hit
 		for(int i = 0; i < size; i++) {
-			if(rows[i] != null && rows[i].key().equals(key)) {
+			if(rows[i].key().equals(key)) {
 				Row temp = rows[i];
 				rows[i] = make;
 				fingerPrint -= temp.hashCode();

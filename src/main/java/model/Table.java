@@ -56,7 +56,6 @@ public interface Table extends Iterable<Row> {
 		List<Row> rowList = new ArrayList<Row>();
 		sb.append(String.format("| %-15s |\n", name()));
 		StringBuilder seperator = new StringBuilder();
-		boolean isNumber;
 		
 		for(Row row: this) {
 			rowList.add(row);
@@ -91,9 +90,11 @@ public interface Table extends Iterable<Row> {
 				List<Object> cols = new ArrayList<>(row.fields());
 				
 				try {
+					// Checks if value is a number, parses to double if so
 					double value = Double.parseDouble(row.key());
 					sb.append(String.format("| %15.2f ", value));
 				} catch (NumberFormatException e) {
+					// Truncates string when too large
 					String str = row.key();
 					if(str.length() > 15) {
 						str = str.substring(0,15);
@@ -102,14 +103,17 @@ public interface Table extends Iterable<Row> {
 				}
 				
 				for(int j = 0; j < degree()-1; j++) {
+					// Prints null if the row is null
 					if(cols.get(j) == null){
-						sb.append(String.format("|                 ", cols.get(j)));
+						sb.append(String.format("|      null       ", cols.get(j)));
 					}
 					
 					try {
+						// Checks if value is a number, parses to double if so
 						double value = Double.parseDouble((String) cols.get(j));
 						sb.append(String.format("| %15.2f ", value));
 					} catch (NumberFormatException e) {
+						// Truncates string when too large
 						String str = (String)cols.get(j);
 						if(str.length() > 15) {
 							str = str.substring(0,15);
@@ -122,11 +126,6 @@ public interface Table extends Iterable<Row> {
 			}
 			
 		}
-		/*
-		 * for(int j = 0; j < degree()-1; j++) {
-					sb.append(String.format("| %-15s ", cols.get(j)));
-				}
-		 */
 		
 		String finalView = sb.toString();
 		return finalView;

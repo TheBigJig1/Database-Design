@@ -11,12 +11,18 @@ public class Sandbox {
 		 * or demonstrate arbitrary code.
 		 */
 
-		SearchTable test1 = new SearchTable("Animals", List.of("Name", "species", "breed", "age"));
-		test1.put("Buddy", List.of("Dog", "Beagle", "12"));
-		test1.put("Tilly", List.of("Dog", "Foxhound", "13"));
-		test1.put("Ash", List.of("Dog", "Labrador Retriver", "8"));
-		test1.put("Felix", List.of("Cat", "Bombeii", "6"));
+		SearchTable test1 = new SearchTable("Sports List", List.of("Sport", "Players per team", "Game Length"));
+		test1.put("Lacrosse", List.of("10", "60 minutes"));
+		test1.put("Hockey", List.of("6", "60 minutes"));
+		test1.put("Basketball", List.of("5", "40 minutes"));
+		test1.put("Soccer", List.of("10", "90 minutes"));
+		test1.put("Football", List.of("11", "60 minutes"));
+		test1.put("Baseball", List.of("10", null));
+		test1.put("Softball", List.of("10", "9 Innings"));
+		test1.put("Swimming", List.of("1", "Varies"));
+		
 		
 		System.out.print(test1);
+		
 	}
 }

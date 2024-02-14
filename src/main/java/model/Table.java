@@ -75,7 +75,7 @@ public interface Table extends Iterable<Row> {
 		for(Object col: this.columns()) {
 			sb.append(String.format("| %-15s ", col));
 		}
-		sb.append(" |\n");
+		sb.append("|\n");
 		sb.append(seperator.toString());
 		sb.append("--\n");
 		
@@ -89,6 +89,7 @@ public interface Table extends Iterable<Row> {
 				Row row = rowList.get(i/2);
 				List<Object> cols = new ArrayList<>(row.fields());
 				
+				// Try catch for the key of each row
 				try {
 					// Checks if value is a number, parses to double if so
 					double value = Double.parseDouble(row.key());
@@ -103,11 +104,13 @@ public interface Table extends Iterable<Row> {
 				}
 				
 				for(int j = 0; j < degree()-1; j++) {
-					// Prints null if the row is null
+					// Prints null if the column element is null
 					if(cols.get(j) == null){
-						sb.append(String.format("|      null       ", cols.get(j)));
+						sb.append(String.format("|                 ", cols.get(j)));
+						break;
 					}
 					
+					// Try catch for each element of each row
 					try {
 						// Checks if value is a number, parses to double if so
 						double value = Double.parseDouble((String) cols.get(j));

@@ -56,7 +56,7 @@ public class SearchTable implements DataTable {
 		
 		// Hit
 		for(int i = 0; i < size; i++) {
-			if(rows[i] != null && rows[i].key().equals(key)) {
+			if(rows[i].key().equals(key)) {
 				Row temp = rows[i];
 				rows[i] = make;
 				fingerPrint -= temp.hashCode();
@@ -85,7 +85,7 @@ public class SearchTable implements DataTable {
 		// Linear search for key
 		for(int i = 0; i < size; i++) {
 			// Hit
-			if(rows[i] != null && rows[i].key().equals(key)) {
+			if(rows[i].key().equals(key)) {
 				return rows[i].fields();
 			}
 		}
@@ -148,11 +148,14 @@ public class SearchTable implements DataTable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj.hashCode() == this.hashCode()) {
-			return true;
-		} else {
-			return false;
+		// Checks if obj is a table of any kind
+		if(obj instanceof Object[][]) {
+			if(obj.hashCode() == this.hashCode()){
+				return true;
+			}
 		}
+		
+		return false;
 	}
 
 	@Override

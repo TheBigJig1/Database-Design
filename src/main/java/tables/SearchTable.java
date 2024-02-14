@@ -56,7 +56,7 @@ public class SearchTable implements DataTable {
 		
 		// Hit
 		for(int i = 0; i < size; i++) {
-			if(rows[i].key().equals(key)) {
+			if(rows[i] != null && rows[i].key().equals(key)) {
 				Row temp = rows[i];
 				rows[i] = make;
 				fingerPrint -= temp.hashCode();

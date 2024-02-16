@@ -10,23 +10,66 @@ public class HashTable implements DataTable {
 	/*
 	 * TODO: For Modules 2 and 3, finish this stub.
 	 */
+	// Private Fields
+	private Row[] rows;
+	private String name;
+	private List<String> columns;
+	private int degree;
+	private int size;
+	private int capacity;
+	private int fingerPrint;
+	private final int initialCapacity = 521;
 
 	public HashTable(String name, List<String> columns) {
-		throw new UnsupportedOperationException();
+		this.name  = name;
+		this.columns = List.copyOf(columns);
+		degree = columns.size();
+		clear();
 	}
 
 	@Override
 	public void clear() {
-		throw new UnsupportedOperationException();
+		capacity = initialCapacity;
+		rows = new Row[capacity];
+		size = 0;
+		fingerPrint = 0;
 	}
 
 	private int hashFunction(String key) {
-		throw new UnsupportedOperationException();
+		String salt = key + "Jaxon Fielding";
+		int hash = 0;
+		
+		for(int i = 0; i < salt.length(); i++) {
+			hash += Math.pow(7, salt.length()-i) * (salt.charAt(i));
+		}
+		
+		return Math.floorMod(hash, capacity);
 	}
 
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
+		if(fields.size()+1 != degree) {
+			throw new IllegalArgumentException();
+		}
+		
+		Row make = new Row(key, List.copyOf(fields));
+		
+		// Hit
+		for(int i = 0; i < size; i++) {
+			if(hashFunction(rows[i].key()) == hashFunction(key)) {
+				Row temp = rows[i];
+				rows[i] = make;
+				fingerPrint -= temp.hashCode();
+				fingerPrint += make.hashCode();
+				return temp.fields();
+			}
+		}
+		
+		// Miss
+		hashFunction(key);
+		
 		throw new UnsupportedOperationException();
+		
 	}
 
 	@Override
@@ -41,27 +84,32 @@ public class HashTable implements DataTable {
 
 	@Override
 	public int degree() {
-		throw new UnsupportedOperationException();
+		return degree;
 	}
 
 	@Override
 	public int size() {
-		throw new UnsupportedOperationException();
+		return size;
 	}
 
 	@Override
 	public int capacity() {
-		throw new UnsupportedOperationException();
+		return capacity;
 	}
 
 	@Override
 	public int hashCode() {
-		throw new UnsupportedOperationException();
+		return fingerPrint;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		throw new UnsupportedOperationException();
+		
+		if(obj instanceof Object[][] && obj.hashCode() == this.fingerPrint) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
@@ -83,12 +131,12 @@ public class HashTable implements DataTable {
 
 	@Override
 	public String name() {
-		throw new UnsupportedOperationException();
+		return name;
 	}
 
 	@Override
 	public List<String> columns() {
-		throw new UnsupportedOperationException();
+		return columns;
 	}
 
 	@Override

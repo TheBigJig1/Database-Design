@@ -49,19 +49,19 @@ public class HashTable implements DataTable {
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
 		if(fields.size()+1 != degree) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Incorrect degree");
 		}
 		
-		int i = hashFunction(key);
+		int i = hashFunction(key)+1;
 		int origIndex = i;
 		boolean fullLoop = true;
-		Row make = new Row(key, List.copyOf(fields));
+		Row make = new Row(key, fields);
 		
-		while(rows[i] != null) {
+		while(rows[i-1] != null) {
 			// Hit 
-			if(rows[i].key().equals(key)) {
-				Row temp = rows[i];
-				rows[i] = make;
+			if(rows[i-1].key().equals(key)) {
+				Row temp = rows[i-1];
+				rows[i-1] = make;
 				fingerPrint -= temp.hashCode();
 				fingerPrint += make.hashCode();
 				return temp.fields();

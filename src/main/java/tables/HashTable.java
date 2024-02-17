@@ -52,29 +52,55 @@ public class HashTable implements DataTable {
 			throw new IllegalArgumentException();
 		}
 		
+		int i = hashFunction(key);
+		int origIndex = i;
+		boolean fullLoop = true;
 		Row make = new Row(key, List.copyOf(fields));
 		
-		// Hit
-		for(int i = 0; i < size; i++) {
-			if(hashFunction(rows[i].key()) == hashFunction(key)) {
+		while(rows[i] != null) {
+			// Hit 
+			if(rows[i].key().equals(key)) {
 				Row temp = rows[i];
 				rows[i] = make;
 				fingerPrint -= temp.hashCode();
 				fingerPrint += make.hashCode();
 				return temp.fields();
 			}
+			// Linear probe
+			i++;
+			if(i%capacity == origIndex && !fullLoop) {
+				throw new IllegalStateException();
+			}
+			fullLoop = false;
 		}
 		
 		// Miss
-		hashFunction(key);
-		
-		throw new UnsupportedOperationException();
+		rows[i] = make;
+		size++;
+		fingerPrint += make.hashCode();
+		return null;
 		
 	}
 
 	@Override
 	public List<Object> get(String key) {
-		throw new UnsupportedOperationException();
+		int i = hashFunction(key);
+		int origIndex = i;
+		boolean fullLoop = true;
+		
+		while(rows[i] != null) {
+			if(rows[i].key().equals(key)) {
+				return rows[i].fields();
+			}
+			i++;
+			if(i%capacity == origIndex && !fullLoop) {
+				throw new IllegalStateException();
+			}
+			fullLoop = false;
+		}
+		
+		return null;
+		
 	}
 
 	@Override

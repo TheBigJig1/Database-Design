@@ -48,38 +48,37 @@ public class HashTable implements DataTable {
 
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
-		if(fields.size()+1 != degree) {
-			throw new IllegalArgumentException("Incorrect degree");
-		}
-		
-		int i = hashFunction(key)+1;
-		int origIndex = i;
-		boolean fullLoop = true;
-		Row make = new Row(key, fields);
-		
-		while(rows[i-1] != null) {
-			// Hit 
-			if(rows[i-1].key().equals(key)) {
-				Row temp = rows[i-1];
-				rows[i-1] = make;
-				fingerPrint -= temp.hashCode();
-				fingerPrint += make.hashCode();
-				return temp.fields();
-			}
-			// Linear probe
-			i++;
-			if(i%capacity == origIndex && !fullLoop) {
-				throw new IllegalStateException();
-			}
-			fullLoop = false;
-		}
-		
-		// Miss
-		rows[i] = make;
-		size++;
-		fingerPrint += make.hashCode();
-		return null;
-		
+	    if (fields.size() + 1 != degree) {
+	        throw new IllegalArgumentException("Incorrect degree.");
+	    }
+
+	    int i = hashFunction(key); 
+	    int origIndex = i;
+	    Row make = new Row(key, fields);
+
+	    do {
+	        // Check if the slot is empty or has the key we're looking for
+	        if (rows[i] == null || rows[i].key().equals(key)) {
+	            // Hit or empty slot found
+	            Row temp = rows[i];
+	            rows[i] = make;
+	            if (temp != null) { 
+	            	// Hit
+	                fingerPrint -= temp.hashCode();
+	                fingerPrint += make.hashCode();
+	                return temp.fields();
+	            } else {
+	            	// Miss
+	                size++;
+	                fingerPrint += make.hashCode();
+	                return null;
+	            }
+	        }
+	        // Linear probing
+	        i = (i + 1) % capacity;
+	    } while (i != origIndex);
+
+	    throw new IllegalStateException("HashTable is full");
 	}
 
 	@Override
@@ -88,7 +87,7 @@ public class HashTable implements DataTable {
 		int origIndex = i;
 		boolean fullLoop = true;
 		
-		while(rows[i] != null) {
+		while(rows[i-1] != null) {
 			if(rows[i].key().equals(key)) {
 				return rows[i].fields();
 			}

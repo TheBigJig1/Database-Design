@@ -85,18 +85,17 @@ public class HashTable implements DataTable {
 	public List<Object> get(String key) {
 		int i = hashFunction(key);
 		int origIndex = i;
-		boolean fullLoop = true;
+		boolean fullLoop = false;
 		
-		while(rows[i-1] != null) {
-			if(rows[i].key().equals(key)) {
-				return rows[i].fields();
+		do {
+			if (rows[i] != null && rows[i].key().equals(key)) {
+				return rows[i].fields(); 
 			}
-			i++;
-			if(i%capacity == origIndex && !fullLoop) {
-				throw new IllegalStateException();
+			i = (i + 1) % capacity;
+			if (i == origIndex && fullLoop) {
+				throw new IllegalStateException("Full loop detected without finding the key");
 			}
-			fullLoop = false;
-		}
+	    } while (i != origIndex);
 		
 		return null;
 		

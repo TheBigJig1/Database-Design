@@ -1,7 +1,9 @@
 package tables;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import model.DataTable;
 import model.Row;
@@ -53,30 +55,31 @@ public class HashTable implements DataTable {
 	    }
 
 	    int i = hashFunction(key); 
-	    int origIndex = i;
-	    Row make = new Row(key, fields);
+	    int origIndex = 5*i;
+	    
+	    Row make = new Row(key, Collections.unmodifiableList(fields));
 
 	    do {
-	        // Check if the slot is empty or has the key we're looking for
-	        if (rows[i] == null || rows[i].key().equals(key)) {
-	            // Hit or empty slot found
-	            Row temp = rows[i];
-	            rows[i] = make;
-	            if (temp != null) { 
-	            	// Hit
-	                fingerPrint -= temp.hashCode();
-	                fingerPrint += make.hashCode();
-	                return temp.fields();
-	            } else {
-	            	// Miss
-	                size++;
-	                fingerPrint += make.hashCode();
-	                return null;
+	    	// Check if the slot is empty or has the key we're looking for
+	    	if (rows[i] == null || rows[i].key().equals(key)) {
+	    		// Hit or empty slot found
+	    		Row Old = rows[i];
+	    		rows[i] = make;
+	    		if (Old != null) { 
+	    			// Hit
+	    			fingerPrint -= Old.hashCode();
+	    			fingerPrint += make.hashCode();
+	    			return Old.fields();
+	    		} else {
+	    			// Miss
+	    			size++;
+	    			fingerPrint += make.hashCode();
+	    			return null;
 	            }
 	        }
 	        // Linear probing
 	        i = (i + 1) % capacity;
-	    } while (i != origIndex);
+	    }  while (i != origIndex);
 
 	    throw new IllegalStateException("HashTable is full");
 	}
@@ -128,7 +131,6 @@ public class HashTable implements DataTable {
 
 	@Override
 	public boolean equals(Object obj) {
-		
 		if(obj instanceof Object[][] && obj.hashCode() == this.fingerPrint) {
 			return true;
 		} else {
@@ -139,16 +141,31 @@ public class HashTable implements DataTable {
 	@Override
 	public Iterator<Row> iterator() {
 		return new Iterator<>() {
-
+			private int currentIndex = 0;
 
 			@Override
 			public boolean hasNext() {
-				throw new UnsupportedOperationException();
+				while(currentIndex < capacity && rows[currentIndex] == null) {
+					currentIndex++;
+				}
+				return currentIndex < capacity;
+				
 			}
 
 			@Override
 			public Row next() {
-				throw new UnsupportedOperationException();
+				if(hasNext() == false) {
+					throw new NoSuchElementException();
+				} else {
+					int oldIndex = currentIndex;
+					currentIndex++;
+					
+					while(currentIndex < capacity && rows[currentIndex] == null) {
+						currentIndex++;
+					}
+					
+					return rows[oldIndex];
+				}
 			}
 		};
 	}
@@ -165,6 +182,6 @@ public class HashTable implements DataTable {
 
 	@Override
 	public String toString() {
-		throw new UnsupportedOperationException();
+		return toTabularView(false);
 	}
 }

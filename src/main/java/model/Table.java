@@ -50,6 +50,31 @@ public interface Table extends Iterable<Row> {
 
 	@Override
 	public String toString();
+	
+	public default void filter(String column, Object target) {
+		// If the table columns don’t contain the given column, throw an illegal argument exception.
+		
+		
+		// If the given target is null, throw an illegal argument exception.
+		if(target == null) {
+			throw new IllegalArgumentException();
+		}
+		
+		// Create a partition (a new table of some type, preferably a hash table) by calling the 2-ary constructor and passing it:
+		// 		i The same name as this table but with _partition appended.
+		// 		ii The same columns as this table.
+		
+		
+		// Traverse each row of this table (not the partition) using the iterator. For each row traversed:
+		// 		Check if the row contains the target value in the given column. If the column is the key, check the key. If it is a field,
+		//		check the field at the index in the list of fields corresponding to the index of the column in the list of columns.
+		// 		If the value in the given column of the row isn’t null and equals the target when compared as strings, include the row
+		// 		in the partition by calling put on the partition and passing it the corresponding key and list of fields.
+		// 		Otherwise, exclude the row from the partition by just skipping it and traversing to the next row.
+		
+		
+		// Return the resulting partition, even if it is empty.
+	}
 
 	public default String toTabularView(boolean sorted) {
 		StringBuilder sb = new StringBuilder();

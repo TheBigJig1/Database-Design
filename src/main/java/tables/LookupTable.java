@@ -101,7 +101,7 @@ public class LookupTable implements Table {
 	public int degree() {
 		int deg = 0;
 		
-		for(String col: columns) {
+		for(@SuppressWarnings("unused") String col: columns) {
 			deg++;
 		}
 		

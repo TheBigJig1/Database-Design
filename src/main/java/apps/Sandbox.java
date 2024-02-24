@@ -3,7 +3,7 @@ package apps;
 import java.util.Arrays;
 import java.util.List;
 
-import tables.SearchTable;
+import tables.HashTable;
 
 public class Sandbox {
 	public static void main(String[] args) {
@@ -12,7 +12,7 @@ public class Sandbox {
 		 * or demonstrate arbitrary code.
 		 */
 
-		SearchTable test1 = new SearchTable("Sports List", List.of("Sport", "Players per team", "Game Length"));
+		HashTable test1 = new HashTable("Sports List", List.of("Sport", "Players per team", "Game Length"));
 		test1.put("Lacrosse", List.of("10", "60 minutes"));
 		test1.put("Hockey", List.of("6", "60 minutes"));
 		test1.put("Basketball", List.of("5", "45 to 60 minutes"));
@@ -23,7 +23,9 @@ public class Sandbox {
 		test1.put("Swimming", List.of("1", "Varies"));
 		
 		
-		System.out.print(test1);
+		System.out.print(test1 +"\n");
+		
+		System.out.print(test1.filter("Game Length", "60 minutes"));
 		
 	}
 }

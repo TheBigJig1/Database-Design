@@ -54,6 +54,11 @@ public interface Table extends Iterable<Row> {
 	public String toString();
 	
 	public default HashTable filter(String column, Object target) {
+		// K2
+		if(target == null) {
+			throw new IllegalArgumentException();
+		}
+		
 		// K1
 		boolean run = true;
 		
@@ -67,41 +72,33 @@ public interface Table extends Iterable<Row> {
 		if(run == true) {
 			throw new IllegalArgumentException();
 		}
-
-		
-		// K2
-		if(target == null) {
-			throw new IllegalArgumentException();
-		}
 		
 		// K3
-		HashTable hash_parition = new HashTable(this.name(), this.columns());
+		HashTable hash_parition = new HashTable(this.name()+"_partition", this.columns());
 		
-		// Traverse each row of this table (not the partition) using the iterator. For each row traversed:
+		
 		Iterator<Row> it = this.iterator();
 		
-		// 		Check if the row contains the target value in the given column. If the column is the key, check the key. If it is a field,
-		//		check the field at the index in the list of fields corresponding to the index of the column in the list of columns.
-		Row row = it.next();
-		
-		if(row.key().equals(target)) {
+		for(int i = 0; i < size(); i++) {
 			
-		}
-		
-		for(int i = 0; i < degree(); i++) {
+			Row row = it.next();
+			String par = target.toString();
 			
-			if(row.key().equals(column)) {
-				
+			if(row.key().equals(par)) {
+				hash_parition.put(row.key(), row.fields());
 			}
 			
-			if(row.fields().get(i).equals(target)) {
-				
+			for(var col : row.fields()) {
+				try {
+					String p = col.toString();
+					if(p.equals(par)) {
+						hash_parition.put(row.key(), row.fields());
+					}
+				} catch(Exception e) {
+					continue;
+				}
 			}
 		}
-		
-		// 		If the value in the given column of the row isn’t null and equals the target when compared as strings, include the row
-		// 		in the partition by calling put on the partition and passing it the corresponding key and list of fields.
-		// 		Otherwise, exclude the row from the partition by just skipping it and traversing to the next row.
 		
 		// Return the resulting partition, even if it is empty.
 		return hash_parition;
@@ -155,7 +152,7 @@ public interface Table extends Iterable<Row> {
 					// Truncates string when too large
 					String str = row.key();
 					if(str.length() > 15) {
-						str = str.substring(0,15);
+						str = str.substring(0,12) + "...";
 					}
 					sb.append(String.format("| %-15s ", row.key()));
 				}
@@ -176,7 +173,7 @@ public interface Table extends Iterable<Row> {
 						// Truncates string when too large
 						String str = (String)cols.get(j);
 						if(str.length() > 15) {
-							str = str.substring(0,15);
+							str = str.substring(0,12) + "...";
 						}
 						sb.append(String.format("| %-15s ", str));
 					}

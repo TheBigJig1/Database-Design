@@ -57,12 +57,10 @@ public interface Table extends Iterable<Row> {
 		// K1
 		boolean run = true;
 		
-		for(int i = 0; i < size(); i++) {
-			for(int j = 0; j < degree(); j++) {
-				if(this.columns().get(j).equals(column)) {
-					run = false;
-					break;
-				}
+		for(int j = 0; j < degree(); j++) {
+			if(this.columns().get(j).equals(column)) {
+				run = false;
+				break;
 			}
 		}
 		
@@ -91,7 +89,14 @@ public interface Table extends Iterable<Row> {
 		}
 		
 		for(int i = 0; i < degree(); i++) {
-			//if(row.)
+			
+			if(row.key().equals(column)) {
+				
+			}
+			
+			if(row.fields().get(i).equals(target)) {
+				
+			}
 		}
 		
 		// 		If the value in the given column of the row isn’t null and equals the target when compared as strings, include the row

@@ -89,13 +89,13 @@ public interface Table extends Iterable<Row> {
 			}
 			
 			for(var col : row.fields()) {
-				try {
+				if(col == null) {
+					continue;
+				} else{
 					String p = col.toString();
 					if(p.equals(par)) {
 						hash_parition.put(row.key(), row.fields());
 					}
-				} catch(Exception e) {
-					continue;
 				}
 			}
 		}

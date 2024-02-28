@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 
 import model.DataTable;
 import model.Row;
+import model.Table;
 
 public class HashTable implements DataTable {
 	/*
@@ -20,7 +21,7 @@ public class HashTable implements DataTable {
 	private int size;
 	private int capacity;
 	private int fingerPrint;
-	private final int initialCapacity = 521;
+	private final static int initialCapacity = 521;
 
 	public HashTable(String name, List<String> columns) {
 		this.name  = name;
@@ -131,7 +132,7 @@ public class HashTable implements DataTable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof Object[][] && obj.hashCode() == this.fingerPrint) {
+		if(obj instanceof Table && obj.hashCode() == this.fingerPrint) {
 			return true;
 		} else {
 			return false;

@@ -4,15 +4,16 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import model.DataTable;
 import model.Row;
 import model.Table;
 
 public class HashTable implements DataTable {
-	/*
-	 * TODO: For Modules 2 and 3, finish this stub.
-	 */
+	
 	// Private Fields
 	private Row[] rows;
 	private String name;
@@ -38,7 +39,7 @@ public class HashTable implements DataTable {
 		fingerPrint = 0;
 	}
 
-	private int hashFunction(String key) {
+	private int hashFunction2(String key) {
 		String salt = key + "Jaxon Fielding";
 		int hash = 0;
 		
@@ -46,7 +47,24 @@ public class HashTable implements DataTable {
 			hash += Math.pow(7, salt.length()-i) * (salt.charAt(i));
 		}
 		
-		return Math.floorMod(hash, capacity);
+		return 1 + Math.floorMod(hash, capacity-1);
+	}
+
+	private int hashFunction1(String key){
+		String salt = "Jaxon Fielding";
+		
+		try{ 
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			md.update(salt.getBytes());
+			md.update(key.getBytes());
+
+			md.digest();
+			BigInteger bigNum = new BigInteger(md.digest());
+
+			return Math.floorMod(bigNum.intValue(), capacity);
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException("SHA-256 not found");
+		}
 	}
 
 	@Override
@@ -54,8 +72,12 @@ public class HashTable implements DataTable {
 	    if (fields.size() + 1 != degree) {
 	        throw new IllegalArgumentException("Incorrect degree.");
 	    }
-
-	    int i = hashFunction(key); 
+		try {
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	    int i = hashFunction2(key); 
 	    int origIndex = 5*i;
 	    
 	    Row make = new Row(key, Collections.unmodifiableList(fields));
@@ -87,7 +109,7 @@ public class HashTable implements DataTable {
 
 	@Override
 	public List<Object> get(String key) {
-		int i = hashFunction(key);
+		int i = hashFunction2(key);
 		int origIndex = i;
 		boolean fullLoop = false;
 		

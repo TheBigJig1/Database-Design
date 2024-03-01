@@ -72,12 +72,8 @@ public class HashTable implements DataTable {
 	    if (fields.size() + 1 != degree) {
 	        throw new IllegalArgumentException("Incorrect degree.");
 	    }
-		try {
-			
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-	    int i = hashFunction2(key); 
+		
+	    int i = hashFunction1(key); 
 	    int origIndex = 5*i;
 	    
 	    Row make = new Row(key, Collections.unmodifiableList(fields));

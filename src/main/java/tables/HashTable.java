@@ -82,7 +82,7 @@ public class HashTable implements DataTable {
 	    
 	    Row make = new Row(key, Collections.unmodifiableList(fields));
 
-		for(int j = 0; j < capacity-1; j++){
+		for(int j = 0; j < capacity; j++){
 
 			// Linear Probe
 			i = (i + c) % capacity;

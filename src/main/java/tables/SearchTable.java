@@ -10,9 +10,7 @@ import model.Row;
 
 
 public class SearchTable implements DataTable {
-	/*
-	 * TODO: For Module 1, finish this stub.
-	 */
+	
 	
 	// 1.A & 3.K complete
 	private Row[] rows;

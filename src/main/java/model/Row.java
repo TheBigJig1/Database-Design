@@ -1,9 +1,16 @@
 package model;
 
 import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 public record Row(String key, List<Object> fields) implements Comparable<Row> {
-
+	public Row {
+		if (fields != null){
+			fields = Collections.unmodifiableList(new ArrayList<>(fields));
+		}
+	}
+	
 	// 1.E complete
 	@Override
 	public String toString() {
@@ -13,7 +20,6 @@ public record Row(String key, List<Object> fields) implements Comparable<Row> {
 	// 3.N complete
 	@Override
 	public int hashCode() {
-        
 		return (key.hashCode() ^ fields.hashCode());
 	}
 

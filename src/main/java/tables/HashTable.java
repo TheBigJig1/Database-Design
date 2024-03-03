@@ -23,6 +23,9 @@ public class HashTable implements DataTable {
 	private int capacity;
 	private int fingerPrint;
 	private final static int initialCapacity = 521;
+	@SuppressWarnings("unused")
+	private int contamination;
+	private final static Row TOMBSTONE = new Row(null, null);
 
 	public HashTable(String name, List<String> columns) {
 		this.name  = name;
@@ -37,14 +40,15 @@ public class HashTable implements DataTable {
 		rows = new Row[capacity];
 		size = 0;
 		fingerPrint = 0;
+		contamination = 0;
 	}
 
 	private int hashFunction2(String key) {
 		String salt = key + "Jaxon Fielding";
-		int hash = 0;
+		long hash = 0;
 		
 		for(int i = 0; i < salt.length(); i++) {
-			hash += Math.pow(7, salt.length()-i) * (salt.charAt(i));
+			hash += Math.pow(3, salt.length()-i) * (salt.charAt(i));
 		}
 		
 		return 1 + Math.floorMod(hash, capacity-1);
@@ -58,10 +62,10 @@ public class HashTable implements DataTable {
 			md.update(salt.getBytes());
 			md.update(key.getBytes());
 
-			md.digest();
 			BigInteger bigNum = new BigInteger(md.digest());
 
-			return Math.floorMod(bigNum.intValue(), capacity);
+			return (Math.floorMod(bigNum.intValue(), capacity));
+
 		} catch (NoSuchAlgorithmException e) {
 			throw new IllegalStateException("SHA-256 not found");
 		}
@@ -74,13 +78,14 @@ public class HashTable implements DataTable {
 	    }
 		
 	    int i = hashFunction1(key); 
-	    int origIndex = 5*i;
+		int c = hashFunction2(key);
+	    int origIndex = i;
 	    
 	    Row make = new Row(key, Collections.unmodifiableList(fields));
 
 	    do {
 	    	// Check if the slot is empty or has the key we're looking for
-	    	if (rows[i] == null || rows[i].key().equals(key)) {
+	    	if (rows[i] == null || (rows[i].key() != null && rows[i].key().equals(key))) {
 	    		// Hit or empty slot found
 	    		Row Old = rows[i];
 	    		rows[i] = make;
@@ -97,23 +102,24 @@ public class HashTable implements DataTable {
 	            }
 	        }
 	        // Linear probing
-	        i = (i + 1) % capacity;
-	    }  while (i != origIndex);
+	        i = (i + c) % capacity;
+	    }  while (i != origIndex); 
 
 	    throw new IllegalStateException("HashTable is full");
 	}
 
 	@Override
 	public List<Object> get(String key) {
-		int i = hashFunction2(key);
+		int i = hashFunction1(key);
+		int c = hashFunction2(key);
 		int origIndex = i;
 		boolean fullLoop = false;
 		
 		do {
-			if (rows[i] != null && rows[i].key().equals(key)) {
+			if (rows[i] != null && rows[i].key() != null && rows[i].key().equals(key)) {
 				return rows[i].fields(); 
 			}
-			i = (i + 1) % capacity;
+			i = (i + c) % capacity;
 			if (i == origIndex && fullLoop) {
 				throw new IllegalStateException("Full loop detected without finding the key");
 			}
@@ -125,7 +131,28 @@ public class HashTable implements DataTable {
 
 	@Override
 	public List<Object> remove(String key) {
-		throw new UnsupportedOperationException();
+		int i = hashFunction1(key);
+		int origIndex = i;
+		boolean fullLoop = false;
+		
+		do {
+			// Hit
+			if (rows[i] != null && rows[i].key() != null && rows[i].key().equals(key)) {
+				Row temp = rows[i];
+				rows[i] = TOMBSTONE;
+				size--;
+				contamination++;
+				fingerPrint -= temp.hashCode();
+				return temp.fields(); 
+			}
+			i = (i + hashFunction2(key)) % capacity;
+			if (i == origIndex && fullLoop) {
+				throw new IllegalStateException("Full loop detected without finding the key");
+			}
+	    } while (i != origIndex);
+		
+		return null;
+		//throw new UnsupportedOperationException();
 	}
 
 	@Override

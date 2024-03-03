@@ -8,11 +8,7 @@ import model.Row;
 import model.Table;
 
 public class LookupTable implements Table {
-	/*
-	 * TODO: For Module 0, test and debug
-	 * the errors in this implementation.
-	 */
-
+	
 	private Row[] rows;
 	private String name;
 	private List<String> columns;

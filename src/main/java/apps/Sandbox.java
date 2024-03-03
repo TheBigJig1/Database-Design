@@ -1,17 +1,14 @@
 package apps;
 
+
 //import java.util.Arrays;
 import java.util.List;
-
 import tables.HashTable;
 
 public class Sandbox {
 	public static void main(String[] args) {
-		/*
-		 * TODO: Modify as needed to debug
-		 * or demonstrate arbitrary code.
-		 */
-
+		
+		 
 		 HashTable test1 = new HashTable("Jaxon Transcript", List.of("Class Name", "Credit Hours", "Semester", "Grade"));
 		 test1.put("CS210", List.of("4", "Spring 2024", "A"));
 		 test1.put("CS350", List.of("3", "Spring 2024", "A"));

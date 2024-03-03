@@ -23,7 +23,6 @@ public class HashTable implements DataTable {
 	private int capacity;
 	private int fingerPrint;
 	private final static int initialCapacity = 521;
-	@SuppressWarnings("unused")
 	private int contamination;
 	private final static Row TOMBSTONE = new Row(null, null);
 
@@ -79,31 +78,50 @@ public class HashTable implements DataTable {
 		
 	    int i = hashFunction1(key); 
 		int c = hashFunction2(key);
-	    int origIndex = i;
+		int tombstoneRecycleIndex = capacity;
 	    
 	    Row make = new Row(key, Collections.unmodifiableList(fields));
 
-	    do {
-	    	// Check if the slot is empty or has the key we're looking for
-	    	if (rows[i] == null || (rows[i].key() != null && rows[i].key().equals(key))) {
-	    		// Hit or empty slot found
-	    		Row Old = rows[i];
-	    		rows[i] = make;
-	    		if (Old != null) { 
-	    			// Hit
-	    			fingerPrint -= Old.hashCode();
-	    			fingerPrint += make.hashCode();
-	    			return Old.fields();
-	    		} else {
-	    			// Miss
-	    			size++;
-	    			fingerPrint += make.hashCode();
-	    			return null;
-	            }
-	        }
-	        // Linear probing
-	        i = (i + c) % capacity;
-	    }  while (i != origIndex); 
+		for(int j = 0; j < capacity-1; j++){
+
+			// Linear Probe
+			i = (i + c) % capacity;
+
+			// Tombstone Check
+			if(rows[i] == TOMBSTONE){
+				if(tombstoneRecycleIndex > capacity-1){
+					tombstoneRecycleIndex  = i;
+				}
+				continue;
+			}
+
+			// Miss
+			if(rows[i] == null){
+				if(tombstoneRecycleIndex != capacity){
+					rows[tombstoneRecycleIndex] = make;
+					contamination--;
+				} else {
+					rows[i] = make;
+				}
+				fingerPrint += make.hashCode();
+				size++;
+	    		return null;
+			}
+
+			// Hit
+			if(rows[i].key() != null && rows[i].key().equals(key)){
+				Row temp = rows[i];
+				if(tombstoneRecycleIndex != capacity){
+					rows[tombstoneRecycleIndex] = make;
+					rows[i] = TOMBSTONE;
+				} else {
+					rows[i] = make;
+				}
+				fingerPrint -= temp.hashCode();
+				fingerPrint += make.hashCode();
+	    		return temp.fields();
+			}
+		}
 
 	    throw new IllegalStateException("HashTable is full");
 	}
@@ -113,16 +131,13 @@ public class HashTable implements DataTable {
 		int i = hashFunction1(key);
 		int c = hashFunction2(key);
 		int origIndex = i;
-		boolean fullLoop = false;
 		
 		do {
 			if (rows[i] != null && rows[i].key() != null && rows[i].key().equals(key)) {
 				return rows[i].fields(); 
 			}
 			i = (i + c) % capacity;
-			if (i == origIndex && fullLoop) {
-				throw new IllegalStateException("Full loop detected without finding the key");
-			}
+			
 	    } while (i != origIndex);
 		
 		return null;
@@ -132,27 +147,26 @@ public class HashTable implements DataTable {
 	@Override
 	public List<Object> remove(String key) {
 		int i = hashFunction1(key);
+		int c = hashFunction2(key);
 		int origIndex = i;
 		boolean fullLoop = false;
 		
 		do {
-			// Hit
 			if (rows[i] != null && rows[i].key() != null && rows[i].key().equals(key)) {
 				Row temp = rows[i];
 				rows[i] = TOMBSTONE;
 				size--;
 				contamination++;
 				fingerPrint -= temp.hashCode();
-				return temp.fields(); 
+				return temp.fields();
 			}
-			i = (i + hashFunction2(key)) % capacity;
+			i = (i + c) % capacity;
 			if (i == origIndex && fullLoop) {
-				throw new IllegalStateException("Full loop detected without finding the key");
+				break;
 			}
 	    } while (i != origIndex);
 		
 		return null;
-		//throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -187,14 +201,14 @@ public class HashTable implements DataTable {
 	@Override
 	public Iterator<Row> iterator() {
 		return new Iterator<>() {
-			private int currentIndex = 0;
+			private int i = 0;
 
 			@Override
 			public boolean hasNext() {
-				while(currentIndex < capacity && rows[currentIndex] == null) {
-					currentIndex++;
+				while(i < capacity && (rows[i] == TOMBSTONE || rows[i] == null)) {
+					i++;
 				}
-				return currentIndex < capacity;
+				return i < capacity;
 				
 			}
 
@@ -203,11 +217,11 @@ public class HashTable implements DataTable {
 				if(hasNext() == false) {
 					throw new NoSuchElementException();
 				} else {
-					int oldIndex = currentIndex;
-					currentIndex++;
+					int oldIndex = i;
+					i++;
 					
-					while(currentIndex < capacity && rows[currentIndex] == null) {
-						currentIndex++;
+					while(i < capacity && (rows[i] == TOMBSTONE || rows[i] == null)) {
+						i++;
 					}
 					
 					return rows[oldIndex];

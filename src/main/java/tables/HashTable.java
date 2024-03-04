@@ -78,7 +78,7 @@ public class HashTable implements DataTable {
 		
 	    int i = hashFunction1(key); 
 		int c = hashFunction2(key);
-		int tombstoneRecycleIndex = capacity;
+		int tombstoneRecycleIndex = -1;
 	    
 	    Row make = new Row(key, Collections.unmodifiableList(fields));
 
@@ -89,15 +89,15 @@ public class HashTable implements DataTable {
 
 			// Tombstone Check
 			if(rows[i] == TOMBSTONE){
-				if(tombstoneRecycleIndex > capacity-1){
+				if(tombstoneRecycleIndex < 0){
 					tombstoneRecycleIndex  = i;
 				}
 				continue;
 			}
-
+			
 			// Miss
 			if(rows[i] == null){
-				if(tombstoneRecycleIndex != capacity){
+				if(tombstoneRecycleIndex > 0){
 					rows[tombstoneRecycleIndex] = make;
 					contamination--;
 				} else {
@@ -109,9 +109,9 @@ public class HashTable implements DataTable {
 			}
 
 			// Hit
-			if(rows[i].key() != null && rows[i].key().equals(key)){
+			if(rows[i].key().equals(key)){
 				Row temp = rows[i];
-				if(tombstoneRecycleIndex != capacity){
+				if(tombstoneRecycleIndex > 0){
 					rows[tombstoneRecycleIndex] = make;
 					rows[i] = TOMBSTONE;
 				} else {

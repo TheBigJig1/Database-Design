@@ -12,6 +12,7 @@ import java.util.List;
 import model.Row;
 import tables.HashTable;
 
+@SuppressWarnings("unused")
 public class Sandbox {
 
 	private static int capacity = 521;

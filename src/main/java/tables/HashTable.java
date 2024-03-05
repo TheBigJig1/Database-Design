@@ -22,8 +22,11 @@ public class HashTable implements DataTable {
 	private int size;
 	private int capacity;
 	private int fingerPrint;
-	private final static int initialCapacity = 521;
 	private int contamination;
+	private int capacityCounter;
+	private final static int[] primes = {97, 199, 457, 1021, 2053, 4133, 9311};
+	private final static int initialCapacity = 41;
+	private final static double loadFactorBound = 0.75;
 	private final static Row TOMBSTONE = new Row(null, null);
 
 	public HashTable(String name, List<String> columns) {
@@ -40,6 +43,7 @@ public class HashTable implements DataTable {
 		size = 0;
 		fingerPrint = 0;
 		contamination = 0;
+		capacityCounter = 0;
 	}
 
 	private int hashFunction2(String key) {
@@ -85,7 +89,7 @@ public class HashTable implements DataTable {
 		for(int j = 0; j < capacity; j++){
 
 			// Linear Probe
-			i = (i + c) % capacity;
+			i = (i + 7*c) % capacity;
 
 			// Tombstone Check
 			if(rows[i] == TOMBSTONE){
@@ -108,8 +112,14 @@ public class HashTable implements DataTable {
 	    		return null;
 			}
 
+			// Check Load Factor
+			if(loadFactor() > loadFactorBound){
+				rehash(primes[capacityCounter]);
+				capacityCounter++;
+			}
+
 			// Hit
-			if(rows[i].key().equals(key)){
+			if(rows[i].key() != null && rows[i].key().equals(key)){
 				Row temp = rows[i];
 				if(tombstoneRecycleIndex > 0){
 					rows[tombstoneRecycleIndex] = make;
@@ -238,6 +248,29 @@ public class HashTable implements DataTable {
 	@Override
 	public List<String> columns() {
 		return columns;
+	}
+
+	@Override
+	public double loadFactor() {
+		
+		return (double)(size()+contamination)/capacity();
+		
+	}
+
+	private void rehash(int newCapacity) {
+		Row[] oldRows = rows;
+		capacity = newCapacity;
+		rows = new Row[capacity];
+		size = 0;
+		contamination = 0;
+		fingerPrint = 0;
+
+		for (Row row : oldRows) {
+			if (row != null && row != TOMBSTONE) {
+				put(row.key(), row.fields());
+			}
+		}
+
 	}
 
 	@Override

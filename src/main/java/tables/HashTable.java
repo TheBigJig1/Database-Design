@@ -91,6 +91,12 @@ public class HashTable implements DataTable {
 			// Linear Probe
 			i = (i + 7*c) % capacity;
 
+			// Check Load Factor
+			if(loadFactor() > loadFactorBound){
+				rehash(primes[capacityCounter]);
+				capacityCounter++;
+			}
+
 			// Tombstone Check
 			if(rows[i] == TOMBSTONE){
 				if(tombstoneRecycleIndex < 0){
@@ -110,12 +116,6 @@ public class HashTable implements DataTable {
 				fingerPrint += make.hashCode();
 				size++;
 	    		return null;
-			}
-
-			// Check Load Factor
-			if(loadFactor() > loadFactorBound){
-				rehash(primes[capacityCounter]);
-				capacityCounter++;
 			}
 
 			// Hit
@@ -270,6 +270,8 @@ public class HashTable implements DataTable {
 				put(row.key(), row.fields());
 			}
 		}
+		
+		System.gc();
 
 	}
 

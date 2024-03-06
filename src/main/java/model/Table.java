@@ -52,6 +52,60 @@ public interface Table extends Iterable<Row> {
 
 	@Override
 	public String toString();
+
+	public default void union(Table param){
+		if(this.degree() != param.degree()){
+			throw new IllegalArgumentException();
+		}
+
+		for(Row target: param){
+			this.put(target.key(), target.fields());
+		}
+	}
+
+	public default void intersect(Table param){
+		if(this.degree() != param.degree()){
+			throw new IllegalArgumentException();
+		}
+		List<String> needRemoved = new ArrayList<>();
+
+		for(Row target: this){
+			if(!param.contains(target.key())){
+				needRemoved.add(target.key());
+			}
+		}
+
+		for(String thisKey: needRemoved){
+			this.remove(thisKey);
+		}
+	}
+
+	public default void minus(Table param){
+		if(this.degree() != param.degree()){
+			throw new IllegalArgumentException();
+		}
+		List<String> needRemoved = new ArrayList<>();
+
+		for(Row target: this){
+			if(param.contains(target.key())){
+				needRemoved.add(target.key());
+			}
+		}
+
+		for(String thisKey: needRemoved){
+			this.remove(thisKey);
+		}
+	}
+
+	public default void keep(String column, Object target){
+		HashTable temp = this.filter(column, target);
+		this.intersect(temp);
+	}
+
+	public default void drop(String column, Object target){
+		HashTable temp = this.filter(column, target);
+		this.minus(temp);
+	}
 	
 	public default HashTable filter(String column, Object target) {
 		// K2

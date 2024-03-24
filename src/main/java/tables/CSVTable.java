@@ -1,5 +1,8 @@
 package tables;
 
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -7,21 +10,51 @@ import model.FileTable;
 import model.Row;
 
 public class CSVTable implements FileTable {
-	/*
-	 * TODO: For Module 4, finish this stub.
-	 */
+	
+	private static final Path basePath = Paths.get("db", "tables");
+	private Path csv;
 
 	public CSVTable(String name, List<String> columns) {
-		throw new UnsupportedOperationException();
+		try{
+			csv = basePath.resolve(name + ".csv");
+			Files.createDirectories(csv);
+			if(Files.notExists(csv)){
+				Files.createFile(csv);
+			}
+
+			String headerString = String.join(",", columns);
+			List<String> records = new ArrayList<String>();
+			records.add(headerString);
+
+			Files.write(csv, records);
+
+		} catch(Exception e){
+			throw new RuntimeException(e);
+		}
+
 	}
 
 	public CSVTable(String name) {
-		throw new UnsupportedOperationException();
+		csv = basePath.resolve(name + ".csv");
+
+		if(!Files.exists(csv)){
+			throw new IllegalArgumentException();
+		}
 	}
 
 	@Override
 	public void clear() {
-		throw new UnsupportedOperationException();
+		try{
+			List<String> records = Files.readAllLines(csv);
+			List<String> header = new ArrayList<String>();
+
+			header.add(records.get(0));
+
+			Files.write(csv, header);
+
+		} catch(Exception e){
+			throw new RuntimeException(e);
+		}
 	}
 
 	@SuppressWarnings("unused")
@@ -34,14 +67,44 @@ public class CSVTable implements FileTable {
 		throw new UnsupportedOperationException();
 	}
 
-	@SuppressWarnings("unused")
+	// 2.H
 	private static String encodeField(Object obj) {
-		throw new UnsupportedOperationException();
+		if(obj.equals(null)){
+			return "null";
+		}
+		if(obj instanceof String){
+			return "\"" + obj + "\"";
+		}
+		if((obj instanceof Boolean) || (obj instanceof Integer) || (obj instanceof Double)){
+			return obj.toString();
+		}
+		
+		throw new IllegalArgumentException("The given object is unsupported.");
 	}
 
-	@SuppressWarnings("unused")
+	// 2.I
 	private static Object decodeField(String field) {
-		throw new UnsupportedOperationException();
+		if(field.equals("null")){
+			return null;
+		}
+		if(field.substring(0,1).equals("\"")){
+			return field.substring(1, field.length()-2);
+		}
+		if(field.equalsIgnoreCase("true")){
+			return true;
+		}
+		if(field.equalsIgnoreCase("false")){
+			return false;
+		}
+		try {
+			return Integer.parseInt(field);
+		} catch (Exception e){
+			try{
+				return Double.parseDouble(field);
+			} catch (Exception f){
+				throw new IllegalArgumentException("The given field is unrecognized.");
+			}
+		}
 	}
 
 	@Override
@@ -61,12 +124,19 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public int degree() {
-		throw new UnsupportedOperationException();
+		List<String> s = columns();
+		return s.size();
 	}
 
 	@Override
 	public int size() {
-		throw new UnsupportedOperationException();
+		try{
+			List<String> records = Files.readAllLines(csv);
+
+			return records.size()-1;
+		} catch(Exception e){
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -86,12 +156,20 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public String name() {
-		throw new UnsupportedOperationException();
+		return (csv.getFileName().toString()).substring(0, (csv.getFileName().toString()).length()-5);
 	}
 
 	@Override
 	public List<String> columns() {
-		throw new UnsupportedOperationException();
+		try{
+			List<String> records = Files.readAllLines(csv);
+			String s = records.get(0);
+
+			return Arrays.asList(s.split(","));
+
+		} catch(Exception e){
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

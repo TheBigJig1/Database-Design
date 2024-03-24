@@ -24,18 +24,22 @@ public class CSVTable implements FileTable {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unused")
 	private static String encodeRow(String key, List<Object> fields) {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unused")
 	private static Row decodeRow(String record) {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unused")
 	private static String encodeField(Object obj) {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unused")
 	private static Object decodeField(String field) {
 		throw new UnsupportedOperationException();
 	}

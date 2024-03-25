@@ -15,9 +15,11 @@ public class CSVTable implements FileTable {
 	private Path csv;
 
 	public CSVTable(String name, List<String> columns) {
+		System.out.println("test");
 		try{
+			Files.createDirectories(basePath);
 			csv = basePath.resolve(name + ".csv");
-			Files.createDirectories(csv);
+
 			if(Files.notExists(csv)){
 				Files.createFile(csv);
 			}
@@ -57,17 +59,35 @@ public class CSVTable implements FileTable {
 		}
 	}
 
+	// 2.J tested and works
 	@SuppressWarnings("unused")
 	private static String encodeRow(String key, List<Object> fields) {
-		throw new UnsupportedOperationException();
+		
+		List<String> encodedFields = new ArrayList<>();
+
+		for(Object target : fields){
+			encodedFields.add(encodeField(target));
+		}
+
+		return String.join(",", key, String.join(",", encodedFields));
 	}
 
-	@SuppressWarnings("unused")
+	// 2.K
 	private static Row decodeRow(String record) {
-		throw new UnsupportedOperationException();
+
+		String[] f = record.split(",");
+		String key = f[0];
+		List<Object> fields = new ArrayList<Object>();
+		
+		for(int i = 1; i < f.length; i++){
+			fields.add(decodeField(f[i]));
+		}
+
+		return new Row(key, fields);
+
 	}
 
-	// 2.H
+	// 2.H tested and works
 	private static String encodeField(Object obj) {
 		if(obj.equals(null)){
 			return "null";
@@ -156,7 +176,7 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public String name() {
-		return (csv.getFileName().toString()).substring(0, (csv.getFileName().toString()).length()-5);
+		return (csv.getFileName().toString()).substring(0, (csv.getFileName().toString()).length()-4);
 	}
 
 	@Override

@@ -49,7 +49,7 @@ public class Sandbox {
 		//var list3 = File.readAllLines(csv);
 		//System.out.println("\"" + "string" + "\"");
 
-		String s = "baseball,true,\"Babe Ruth\",3";
+		String s = "baseball,true,\"Babe Ruth\",4.293";
 		System.out.println(s);
 
 		Row temp = decodeRow(s);

@@ -25,10 +25,10 @@ public class CSVTable implements FileTable {
 			}
 
 			String headerString = String.join(",", columns);
-			List<String> records = new ArrayList<String>();
-			records.add(headerString);
+			List<String> row = new ArrayList<String>();
+			row.add(headerString);
 
-			Files.write(csv, records);
+			Files.write(csv, row);
 
 		} catch(Exception e){
 			throw new RuntimeException(e);
@@ -72,7 +72,7 @@ public class CSVTable implements FileTable {
 		return String.join(",", key, String.join(",", encodedFields));
 	}
 
-	// 2.K
+	// 2.K tested and throws error on clear unit test
 	private static Row decodeRow(String record) {
 
 		String[] f = record.split(",");
@@ -80,7 +80,9 @@ public class CSVTable implements FileTable {
 		List<Object> fields = new ArrayList<Object>();
 		
 		for(int i = 1; i < f.length; i++){
-			fields.add(decodeField(f[i]));
+			String temp = f[i].trim();
+			// Error here for clear somehow
+			fields.add(decodeField(temp));
 		}
 
 		return new Row(key, fields);
@@ -102,7 +104,7 @@ public class CSVTable implements FileTable {
 		throw new IllegalArgumentException("The given object is unsupported.");
 	}
 
-	// 2.I
+	// 2.I tested and throws error on clear Unit test
 	private static Object decodeField(String field) {
 		if(field.equals("null")){
 			return null;
@@ -119,17 +121,62 @@ public class CSVTable implements FileTable {
 		try {
 			return Integer.parseInt(field);
 		} catch (Exception e){
+			System.out.println("Not an integer");
 			try{
 				return Double.parseDouble(field);
 			} catch (Exception f){
-				throw new IllegalArgumentException("The given field is unrecognized.");
+				System.out.println("Not a Double");
 			}
 		}
+		
+		throw new IllegalArgumentException("The given field is unrecognized.");
 	}
 
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
-		throw new UnsupportedOperationException();
+		// Read lines from csv table
+		List<String> records = new ArrayList<String>();
+		try {
+			records  = Files.readAllLines(csv);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		// Find degree of this table, check if it matches degree of input
+		String s = records.get(0);
+		int degree = Arrays.asList(s.split(",")).size()-1;
+
+		if(degree != fields.size()){
+			throw new IllegalArgumentException("Incorrect degree");
+		}
+
+		// Encode new record
+		String newRec = encodeRow(key, fields);
+		Row temp = null;
+
+		// Lin traverse and decode rows searching for key
+		for(int i = 1; i < records.size(); i++){
+			String tarkey = decodeRow(records.get(i)).key();
+			// Hit
+			if(key.equals(tarkey)){
+				temp = decodeRow(records.get(i));
+				records.remove(i);
+				records.add(1, newRec);
+				break;
+			}
+		}
+
+		// Miss
+		records.add(1, newRec);
+		
+		// Write to csv files
+		try {
+			Files.write(csv, records);
+		} catch (Exception e) {
+			throw new RuntimeException("Cannot write records to CSV File in Put method");
+		}
+
+		return temp.fields();
 	}
 
 	@Override
@@ -160,8 +207,22 @@ public class CSVTable implements FileTable {
 	}
 
 	@Override
-	public int hashCode() {
-		throw new UnsupportedOperationException();
+	public int hashCode(){
+		int fingerprint = 0;
+		List<String> rows = new ArrayList<String>();
+
+		try {
+			rows  = Files.readAllLines(csv);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		for(String target : rows){
+			Row temp = decodeRow(target);
+			fingerprint += temp.hashCode();
+		}
+
+		return fingerprint;
 	}
 
 	@Override

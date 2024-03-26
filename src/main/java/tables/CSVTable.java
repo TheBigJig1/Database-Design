@@ -89,13 +89,14 @@ public class CSVTable implements FileTable {
 
 	// 2.H tested and works
 	private static String encodeField(Object obj) {
-		if(obj.equals(null)){
+		if(obj == (null)){
 			return "null";
 		}
 		if(obj instanceof String){
 			return "\"" + obj + "\"";
 		}
 		if((obj instanceof Boolean) || (obj instanceof Integer) || (obj instanceof Double)){
+			
 			return obj.toString();
 		}
 		
@@ -174,6 +175,7 @@ public class CSVTable implements FileTable {
 			throw new RuntimeException("Cannot write records to CSV File in Put method");
 		}
 
+		// Return null or temp
 		if(temp == null){
 			return null;
 		}
@@ -218,8 +220,8 @@ public class CSVTable implements FileTable {
 			throw new RuntimeException(e);
 		}
 
-		for(String target : rows){
-			Row temp = decodeRow(target);
+		for(int i = 1; i < rows.size(); i++){
+			Row temp = decodeRow(rows.get(i));
 			fingerprint += temp.hashCode();
 		}
 

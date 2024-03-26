@@ -49,12 +49,12 @@ public class Sandbox {
 		//var list3 = File.readAllLines(csv);
 		//System.out.println("\"" + "string" + "\"");
 
-		String s = "baseball,true,\"Babe Ruth\",4.293";
-		System.out.println(s);
+		String s = "baseball, tRue,\"Babe Ruth\",4.293 , 17, Null, FALsE, \"H20`.@je\"";
+		System.out.println(s+"\n");
 
 		Row temp = decodeRow(s);
 
-		System.out.print(temp.toString());
+		System.out.println(temp.toString());
 		
 	}
 
@@ -65,18 +65,20 @@ public class Sandbox {
 		List<Object> fields = new ArrayList<Object>();
 		
 		for(int i = 1; i < f.length; i++){
-			fields.add(decodeField(f[i]));
+			String temp = f[i].trim();
+			System.out.println(temp);
+			// Error here for clear somehow
+			fields.add(decodeField(temp));
 		}
 
 		return new Row(key, fields);
-
 	}
 
 	private static Object decodeField(String field) {
-		if(field.equals("null")){
+		if(field.equalsIgnoreCase("null")){
 			return null;
 		}
-		if(field.substring(0,1).equals("\"")){
+		if(field.substring(0,1).equals("\"") && field.substring(field.length()-1,field.length()).equals("\"")){
 			return field.substring(1, field.length()-1);
 		}
 		if(field.equalsIgnoreCase("true")){
@@ -88,12 +90,15 @@ public class Sandbox {
 		try {
 			return Integer.parseInt(field);
 		} catch (Exception e){
+			System.out.println("Not an integer");
 			try{
 				return Double.parseDouble(field);
 			} catch (Exception f){
-				throw new IllegalArgumentException("The given field is unrecognized.");
+				System.out.println("Not a Double");
 			}
 		}
+		
+		throw new IllegalArgumentException("The given field is unrecognized.");
 	}
 
 }

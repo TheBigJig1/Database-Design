@@ -48,8 +48,8 @@ public class CSVTable implements FileTable {
 	public void clear() {
 		try{
 			List<String> records = Files.readAllLines(csv);
-			List<String> header = new ArrayList<String>();
 
+			List<String> header = new ArrayList<String>();
 			header.add(records.get(0));
 
 			Files.write(csv, header);
@@ -81,12 +81,10 @@ public class CSVTable implements FileTable {
 		
 		for(int i = 1; i < f.length; i++){
 			String temp = f[i].trim();
-			// Error here for clear somehow
 			fields.add(decodeField(temp));
 		}
 
 		return new Row(key, fields);
-
 	}
 
 	// 2.H tested and works
@@ -106,11 +104,11 @@ public class CSVTable implements FileTable {
 
 	// 2.I tested and throws error on clear Unit test
 	private static Object decodeField(String field) {
-		if(field.equals("null")){
+		if(field.equalsIgnoreCase("null")){
 			return null;
 		}
-		if(field.substring(0,1).equals("\"")){
-			return field.substring(1, field.length()-2);
+		if(field.substring(0,1).equals("\"") && field.substring(field.length()-1,field.length()).equals("\"")){
+			return field.substring(1, field.length()-1);
 		}
 		if(field.equalsIgnoreCase("true")){
 			return true;
@@ -121,11 +119,11 @@ public class CSVTable implements FileTable {
 		try {
 			return Integer.parseInt(field);
 		} catch (Exception e){
-			System.out.println("Not an integer");
+			// Try to parse to double
 			try{
 				return Double.parseDouble(field);
 			} catch (Exception f){
-				System.out.println("Not a Double");
+				// Do nothing and leave
 			}
 		}
 		
@@ -176,6 +174,9 @@ public class CSVTable implements FileTable {
 			throw new RuntimeException("Cannot write records to CSV File in Put method");
 		}
 
+		if(temp == null){
+			return null;
+		}
 		return temp.fields();
 	}
 

@@ -8,6 +8,7 @@ import java.util.List;
 
 import model.FileTable;
 import model.Row;
+import model.Table;
 
 public class CSVTable implements FileTable {
 	
@@ -59,8 +60,6 @@ public class CSVTable implements FileTable {
 		}
 	}
 
-	// 2.J tested and works
-	@SuppressWarnings("unused")
 	private static String encodeRow(String key, List<Object> fields) {
 		
 		List<String> encodedFields = new ArrayList<>();
@@ -72,7 +71,6 @@ public class CSVTable implements FileTable {
 		return String.join(",", key, String.join(",", encodedFields));
 	}
 
-	// 2.K tested and throws error on clear unit test
 	private static Row decodeRow(String record) {
 
 		String[] f = record.split(",");
@@ -87,7 +85,6 @@ public class CSVTable implements FileTable {
 		return new Row(key, fields);
 	}
 
-	// 2.H tested and works
 	private static String encodeField(Object obj) {
 		if(obj == (null)){
 			return "null";
@@ -103,7 +100,6 @@ public class CSVTable implements FileTable {
 		throw new IllegalArgumentException("The given object is unsupported.");
 	}
 
-	// 2.I tested and throws error on clear Unit test
 	private static Object decodeField(String field) {
 		if(field.equalsIgnoreCase("null")){
 			return null;
@@ -294,11 +290,22 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public boolean equals(Object obj) {
-		throw new UnsupportedOperationException();
+		if(obj instanceof Table && obj.hashCode() == this.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	public Iterator<Row> iterator() {
+		/*List<String> records = new ArrayList<String>();
+		try {
+			records  = Files.readAllLines(csv);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}*/
+
 		throw new UnsupportedOperationException();
 	}
 
@@ -322,7 +329,7 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public String toString() {
-		throw new UnsupportedOperationException();
+		return toTabularView(false);
 	}
 
 	public static CSVTable fromText(String name, String text) {

@@ -181,9 +181,13 @@ public interface Table extends Iterable<Row> {
 		sb.append("--\n");
 		
 		for(Object col: this.columns()) {
-			sb.append(String.format("| %-15s ", col));
+			if(col instanceof String && col.toString().length() > 15){
+				sb.append(String.format("| %-15s ", col.toString().substring(0,12) + "..."));
+			} else {
+				sb.append(String.format("| %-15s ", col));
+			}
 		}
-		sb.append("|\n");
+		sb.append(" |\n");
 		sb.append(seperator.toString());
 		sb.append("--\n");
 		

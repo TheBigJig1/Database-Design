@@ -21,11 +21,14 @@ public class Sandbox {
 	private static int capacity = 521;
 	public static void main(String[] args) {
 		
-		CSVTable test = new CSVTable("Name", List.of("name", "sport"));
-
-		String s = "baseball, tRue,\"Babe Ruth\",4.293 , 17, Null, FALsE, \"H20`.@je\"";
-		System.out.println(s+"\n");
+		CSVTable test = CSVTable.fromText("example1", """
+			word,length,part_of_speech
+			"dog",3,"noun"
+			"plaid",5,"adjective"
+			"defenstrate",12,"verb"
+			""");
 		
+		System.out.println(test.toString());
 	}
 
 }

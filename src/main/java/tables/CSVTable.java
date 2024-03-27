@@ -16,7 +16,6 @@ public class CSVTable implements FileTable {
 	private Path csv;
 
 	public CSVTable(String name, List<String> columns) {
-		System.out.println("test");
 		try{
 			Files.createDirectories(basePath);
 			csv = basePath.resolve(name + ".csv");
@@ -97,7 +96,7 @@ public class CSVTable implements FileTable {
 			return obj.toString();
 		}
 		
-		throw new IllegalArgumentException("The given object is unsupported.");
+		throw new IllegalArgumentException("The given object is unsupported: " + obj.toString());
 	}
 
 	private static Object decodeField(String field) {
@@ -124,7 +123,7 @@ public class CSVTable implements FileTable {
 			}
 		}
 		
-		throw new IllegalArgumentException("The given field is unrecognized.");
+		throw new IllegalArgumentException("The given field " + field + "is unrecognized: ");
 	}
 
 	@Override
@@ -299,14 +298,17 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public Iterator<Row> iterator() {
-		/*List<String> records = new ArrayList<String>();
 		try {
-			records  = Files.readAllLines(csv);
+			List<String> records  = Files.readAllLines(csv);
+			records.remove(0);
+			List<Row> newList = new ArrayList<Row>();
+			for(String target : records){
+				newList.add(decodeRow(target));
+			}
+			return newList.iterator();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		}*/
-
-		throw new UnsupportedOperationException();
+		}
 	}
 
 	@Override
@@ -333,6 +335,20 @@ public class CSVTable implements FileTable {
 	}
 
 	public static CSVTable fromText(String name, String text) {
-		throw new UnsupportedOperationException();
+		try{
+			Files.createDirectories(basePath);
+			Path localCSV = basePath.resolve(name + ".csv");
+
+			if(Files.notExists(localCSV)){
+				Files.createFile(localCSV);
+			}
+
+			Files.write(localCSV, text.getBytes());
+
+			return new CSVTable(name);
+
+		} catch(Exception e){
+			throw new RuntimeException(e);
+		}
 	}
 }

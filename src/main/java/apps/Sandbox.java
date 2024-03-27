@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 import model.Row;
+import model.Table;
 import tables.HashTable;
 import tables.CSVTable;
 
@@ -21,12 +22,12 @@ public class Sandbox {
 	private static int capacity = 521;
 	public static void main(String[] args) {
 		
-		CSVTable test = CSVTable.fromText("example1", """
-			word,length,part_of_speech,used_in_language
-			"dog",3,"noun",true
-			"plaid",5,"adjective",true
-			"defenstrate",12,"verb",false
-			""");
+		Table test = new CSVTable("example2");
+		test.put("JuJu_Smith_Schuster",List.of("\"Patriots\"","17","20.5","True"));
+		test.put("Eli_Manning",List.of("\"Giants\"","10","22.9","False"));
+		test.put("Jason_Kelce",List.of("\"Eagles\"","62","null","True"));
+		test.put("Travis_Kelce",List.of("\"Cheifs\"","87","null","False"));
+		test.put("DK_Metcalf",List.of("\"Seahawks\"","14","8.3","True"));
 		
 		System.out.println(test.toString());
 	}

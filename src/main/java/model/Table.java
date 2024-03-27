@@ -208,7 +208,7 @@ public interface Table extends Iterable<Row> {
 					if(str.length() > 15) {
 						str = str.substring(0,12) + "...";
 					}
-					sb.append(String.format("| %-15s ", row.key()));
+					sb.append(String.format("| %-15s ", str));
 				} catch (Exception e) {
 					throw new IllegalStateException("Key type not recognized");
 				}

@@ -96,7 +96,7 @@ public class CSVTable implements FileTable {
 			return "\"" + obj + "\"";
 		}
 		if((obj instanceof Boolean) || (obj instanceof Integer) || (obj instanceof Double)){
-			
+
 			return obj.toString();
 		}
 		
@@ -166,7 +166,9 @@ public class CSVTable implements FileTable {
 		}
 
 		// Miss
-		records.add(1, newRec);
+		if(temp == null){
+			records.add(1, newRec);
+		}
 		
 		// Write to csv files
 		try {
@@ -184,12 +186,75 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public List<Object> get(String key) {
-		throw new UnsupportedOperationException();
+
+		List<String> records = new ArrayList<String>();
+		try {
+			records  = Files.readAllLines(csv);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		String temp = null;
+		// Lin traverse and decode rows searching for key
+		for(int i = 1; i < records.size(); i++){
+			String tarkey = decodeRow(records.get(i)).key();
+
+			// Hit
+			if(key.equals(tarkey)){
+				temp = records.get(i);
+				records.remove(i);
+				records.add(1, temp);
+			}
+		}
+
+		// Write to csv files
+		try {
+			Files.write(csv, records);
+		} catch (Exception e) {
+			throw new RuntimeException("Cannot write records to CSV File in Put method");
+		}
+
+		// Return null or temp
+		if(temp == null){
+			return null;
+		}
+		return decodeRow(temp).fields();
+
 	}
 
 	@Override
 	public List<Object> remove(String key) {
-		throw new UnsupportedOperationException();
+		List<String> records = new ArrayList<String>();
+		try {
+			records  = Files.readAllLines(csv);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		Row temp = null;
+		// Lin traverse and decode rows searching for key
+		for(int i = 1; i < records.size(); i++){
+			String tarkey = decodeRow(records.get(i)).key();
+
+			// Hit
+			if(key.equals(tarkey)){
+				temp = decodeRow(records.get(i));
+				records.remove(i);
+			}
+		}
+
+		// Write to csv files
+		try {
+			Files.write(csv, records);
+		} catch (Exception e) {
+			throw new RuntimeException("Cannot write records to CSV File in Put method");
+		}
+
+		// Return null or temp
+		if(temp == null){
+			return null;
+		}
+		return temp.fields();
 	}
 
 	@Override
@@ -202,7 +267,6 @@ public class CSVTable implements FileTable {
 	public int size() {
 		try{
 			List<String> records = Files.readAllLines(csv);
-
 			return records.size()-1;
 		} catch(Exception e){
 			throw new RuntimeException(e);

@@ -12,6 +12,7 @@ import model.Table;
 
 public class CSVTable implements FileTable {
 	
+	// Create fields
 	private static final Path basePath = Paths.get("db", "tables");
 	private Path csv;
 

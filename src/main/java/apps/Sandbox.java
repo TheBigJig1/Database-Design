@@ -22,10 +22,10 @@ public class Sandbox {
 	public static void main(String[] args) {
 		
 		CSVTable test = CSVTable.fromText("example1", """
-			word,length,vvvvvvvvvvvvvvvvvvvv,used_in_language,gay_people
-			"dog",3,"noun",true,"yes"
-			"plaid",5,"adjective",true,"no"
-			"defenstrate",12,"verb",false,"yes"
+			word,length,part_of_speech,used_in_language
+			"dog",3,"noun",true
+			"plaid",5,"adjective",true
+			"defenstrate",12,"verb",false
 			""");
 		
 		System.out.println(test.toString());

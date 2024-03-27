@@ -17,17 +17,21 @@ public class CSVTable implements FileTable {
 
 	public CSVTable(String name, List<String> columns) {
 		try{
+			// Create a base directory in DB 
 			Files.createDirectories(basePath);
 			csv = basePath.resolve(name + ".csv");
 
+			// Create the file if it does not already exist
 			if(Files.notExists(csv)){
 				Files.createFile(csv);
 			}
 
+			// Add the joined string to a row of Strings
 			String headerString = String.join(",", columns);
 			List<String> row = new ArrayList<String>();
 			row.add(headerString);
 
+			// Write list to the csv files
 			Files.write(csv, row);
 
 		} catch(Exception e){
@@ -37,6 +41,7 @@ public class CSVTable implements FileTable {
 	}
 
 	public CSVTable(String name) {
+		// intialize the path field
 		csv = basePath.resolve(name + ".csv");
 
 		if(!Files.exists(csv)){
@@ -47,11 +52,14 @@ public class CSVTable implements FileTable {
 	@Override
 	public void clear() {
 		try{
+			// Read all lines to a list of records
 			List<String> records = Files.readAllLines(csv);
 
+			// Add only to header to the list of records
 			List<String> header = new ArrayList<String>();
 			header.add(records.get(0));
 
+			// Write the list with only the header to the file
 			Files.write(csv, header);
 
 		} catch(Exception e){
@@ -60,31 +68,37 @@ public class CSVTable implements FileTable {
 	}
 
 	private static String encodeRow(String key, List<Object> fields) {
-		
+		// Create an empty list
 		List<String> encodedFields = new ArrayList<>();
 
+		// Add encode the fields and add to list
 		for(Object target : fields){
 			encodedFields.add(encodeField(target));
 		}
 
+		// Return a string of the key and fields seperated by commas
 		return String.join(",", key, String.join(",", encodedFields));
 	}
 
 	private static Row decodeRow(String record) {
 
+		// Split the string into an array of strings
 		String[] f = record.split(",");
 		String key = f[0];
 		List<Object> fields = new ArrayList<Object>();
 		
+		// Exlcuding the key, trim the strings, decode them, add to list of fields
 		for(int i = 1; i < f.length; i++){
 			String temp = f[i].trim();
 			fields.add(decodeField(temp));
 		}
 
+		// Return a new row of key and fields
 		return new Row(key, fields);
 	}
 
 	private static String encodeField(Object obj) {
+		// Check if obj is an instance of any supported fields
 		if(obj == (null)){
 			return "null";
 		}
@@ -100,6 +114,7 @@ public class CSVTable implements FileTable {
 	}
 
 	private static Object decodeField(String field) {
+		// Check if string field is one of the supported instances
 		if(field.equalsIgnoreCase("null")){
 			return null;
 		}
@@ -182,6 +197,7 @@ public class CSVTable implements FileTable {
 	@Override
 	public List<Object> get(String key) {
 
+		// Read all lines into list of records
 		List<String> records = new ArrayList<String>();
 		try {
 			records  = Files.readAllLines(csv);
@@ -219,6 +235,7 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public List<Object> remove(String key) {
+		// Read all lines to a list of records
 		List<String> records = new ArrayList<String>();
 		try {
 			records  = Files.readAllLines(csv);
@@ -260,6 +277,7 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public int size() {
+		// Return size 
 		try{
 			List<String> records = Files.readAllLines(csv);
 			return records.size()-1;
@@ -270,15 +288,18 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public int hashCode(){
+		// Create a new list
 		int fingerprint = 0;
 		List<String> rows = new ArrayList<String>();
 
+		// Write all the lines to the file
 		try {
 			rows  = Files.readAllLines(csv);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 
+		// Add the fingerprint for each string decoded to a row
 		for(int i = 1; i < rows.size(); i++){
 			Row temp = decodeRow(rows.get(i));
 			fingerprint += temp.hashCode();
@@ -299,12 +320,16 @@ public class CSVTable implements FileTable {
 	@Override
 	public Iterator<Row> iterator() {
 		try {
+			// Read all lines from the csv to a list.  Remove the header.  Create empty list
 			List<String> records  = Files.readAllLines(csv);
 			records.remove(0);
 			List<Row> newList = new ArrayList<Row>();
+
+			// Excluding the header, decode  all lines from old list of strings. Add to new list of rows
 			for(String target : records){
 				newList.add(decodeRow(target));
 			}
+
 			return newList.iterator();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -313,15 +338,18 @@ public class CSVTable implements FileTable {
 
 	@Override
 	public String name() {
+		// Return the name of the file exluding the .csv suffix
 		return (csv.getFileName().toString()).substring(0, (csv.getFileName().toString()).length()-4);
 	}
 
 	@Override
 	public List<String> columns() {
 		try{
+			// Read all lines into a list of strings
 			List<String> records = Files.readAllLines(csv);
 			String s = records.get(0);
 
+			// Return the header as an array of strings
 			return Arrays.asList(s.split(","));
 
 		} catch(Exception e){
@@ -336,6 +364,7 @@ public class CSVTable implements FileTable {
 
 	public static CSVTable fromText(String name, String text) {
 		try{
+			// create base directory if needed
 			Files.createDirectories(basePath);
 			Path localCSV = basePath.resolve(name + ".csv");
 
@@ -343,8 +372,10 @@ public class CSVTable implements FileTable {
 				Files.createFile(localCSV);
 			}
 
+			// Write the bytes of a string to the files
 			Files.write(localCSV, text.getBytes());
 
+			// Return the table retrieved from the 1-ary constructor
 			return new CSVTable(name);
 
 		} catch(Exception e){

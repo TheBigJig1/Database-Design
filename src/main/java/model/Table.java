@@ -199,16 +199,14 @@ public interface Table extends Iterable<Row> {
 				
 				// Try catch for the key of each row
 				try {
-					// Checks if value is a number, parses to double if so
-					double value = Double.parseDouble(row.key());
-					sb.append(String.format("| %15.2f ", value));
-				} catch (NumberFormatException e) {
 					// Truncates string when too large
 					String str = row.key();
 					if(str.length() > 15) {
 						str = str.substring(0,12) + "...";
 					}
 					sb.append(String.format("| %-15s ", row.key()));
+				} catch (Exception e) {
+					throw new IllegalStateException("Key type not recognized");
 				}
 				
 				for(int j = 0; j < degree()-1; j++) {
@@ -218,13 +216,21 @@ public interface Table extends Iterable<Row> {
 						break;
 					}
 					
-					// Try catch for each element of each row
-					try {
-						// Checks if value is a number, parses to double if so
-						double value = Double.parseDouble((String) cols.get(j));
+					if(cols.get(j) instanceof Integer){
+						int value = Integer.parseInt(cols.get(j).toString());
+						sb.append(String.format("| %15d ", value));
+					}
+
+					if(cols.get(j) instanceof Double){
+						double value = Double.parseDouble(cols.get(j).toString());
 						sb.append(String.format("| %15.2f ", value));
-					} catch (NumberFormatException e) {
-						// Truncates string when too large
+					}
+
+					if(cols.get(j) instanceof Boolean){
+						sb.append(String.format("| %-15s ", cols.get(j).toString()));
+					}
+
+					if(cols.get(j) instanceof String){
 						String str = (String)cols.get(j);
 						if(str.length() > 15) {
 							str = str.substring(0,12) + "...";

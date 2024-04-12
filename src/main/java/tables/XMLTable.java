@@ -1,15 +1,17 @@
 package tables;
 
+import java.nio.file.*;
 import java.util.Iterator;
 import java.util.List;
 
 import model.FileTable;
 import model.Row;
+import org.dom4j.io.XMLWriter;
 
 public class XMLTable implements FileTable {
-	/*
-	 * TODO: For Module 5, finish this stub.
-	 */
+	
+	private static final Path basePath = Paths.get("db", "tables");
+	private Path XMLTable;
 
 	public XMLTable(String name, List<String> columns) {
 		throw new UnsupportedOperationException();

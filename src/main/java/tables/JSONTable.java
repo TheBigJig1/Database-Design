@@ -46,8 +46,6 @@ public class JSONTable implements FileTable {
 				columnNamesNode.add(column);
 			}
 
-			//mapper.writeValue(JSONTable.toFile(), rootNode);
-
 			flush();
 
 		} catch(Exception e){
@@ -93,6 +91,7 @@ public class JSONTable implements FileTable {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
 		
@@ -142,7 +141,19 @@ public class JSONTable implements FileTable {
 
 	@Override
 	public List<Object> remove(String key) {
-		throw new UnsupportedOperationException();
+
+		ObjectNode dataNode = (ObjectNode) rootNode.get("Data");
+
+		if(dataNode.get(key) != null){
+
+			JsonNode temp = dataNode.remove(key);
+			@SuppressWarnings("rawtypes")
+			List fields = mapper.convertValue(temp.get(key), List.class);
+			
+			return fields;
+		}
+
+		return null;
 	}
 
 	@Override

@@ -4,7 +4,6 @@ import java.nio.file.*;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 
 import model.FileTable;
@@ -71,15 +70,11 @@ public class JSONTable implements FileTable {
 
 	@Override
 	public void clear() {
-		try {
-			ObjectNode newDataNode = mapper.createObjectNode();
+		ObjectNode newDataNode = mapper.createObjectNode();
 
-			rootNode.set("Data", newDataNode);
+		rootNode.set("Data", newDataNode);
 
-			mapper.writeValue(JSONTable.toFile(), rootNode);
-		} catch (Exception e){
-			throw new RuntimeException(e);
-		}
+		flush();
 	}
 
 	@Override
@@ -139,6 +134,7 @@ public class JSONTable implements FileTable {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<Object> remove(String key) {
 
@@ -207,7 +203,8 @@ public class JSONTable implements FileTable {
 				
 			String key = fieldIterator.next();
 			
-          	Row row = new Row(key, mapper.convertValue(dataNode.get(key), List.class));
+          	@SuppressWarnings("unchecked")
+			Row row = new Row(key, mapper.convertValue(dataNode.get(key), List.class));
          	
          	newList.add(row);
 		}

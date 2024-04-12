@@ -2,6 +2,7 @@ package tables;
 
 import java.io.FileWriter;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class XMLTable implements FileTable {
 			}
 
 			doc = DocumentHelper.createDocument();
-			var root = doc.addElement(name);
+			var root = doc.addElement("Table");
 			var tableColumns = root.addElement("Columns");
 			root.addElement("Rows");
 
@@ -61,13 +62,18 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public void clear() {
-		throw new UnsupportedOperationException();
+		Element root = doc.getRootElement();
+		Element rows = root.element("Rows");
+
+		rows.clearContent();
+		flush();
 	}
 
 	@Override
 	public void flush() {
 		try {
-			var writer = new XMLWriter(new FileWriter(XMLTable.toFile()));
+			OutputFormat format = OutputFormat.createPrettyPrint();
+			var writer = new XMLWriter(new FileWriter(XMLTable.toFile()), format);
 			writer.write(doc);
 			writer.close();
 		} catch (Exception e) {
@@ -117,12 +123,26 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public String name() {
-		throw new UnsupportedOperationException();
+		return (XMLTable.getFileName().toString()).substring(0, (XMLTable.getFileName().toString()).length()-4);
 	}
 
 	@Override
 	public List<String> columns() {
-		throw new UnsupportedOperationException();
+		// Create list to return
+		List<String> columnNames = new ArrayList<String>();
+
+		// get the root and the columns Element
+		Element root = doc.getRootElement();
+		Element columnsElement = root.element("Columns");
+
+		List<Element> columns = columnsElement.elements("Column");
+
+		// Add columns to the node
+		for (Element col : columns) {
+			columnNames.add(col.getText());
+		}
+		
+		return columnNames;
 	}
 
 	@Override

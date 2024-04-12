@@ -33,9 +33,21 @@ public class Sandbox {
 		String name = "test";
 		List<String> columns = Arrays.asList("ExKey", "ExField1", "ExField2", "ExField3");
 
-		JSONTable(name, columns);
+		//JSONTable(name, columns);
 
-		
+		String key = "Page";
+		JsonNode dataNode = rootNode.get("Data");
+
+		if(dataNode.get(key) != null){
+
+			JsonNode temp = dataNode.get(key);
+			@SuppressWarnings("rawtypes")
+			List fields = mapper.convertValue(temp.get(key), List.class);
+
+			for(Object field : fields){
+				System.out.println(field);
+			}
+		}
 	}
 
 	public static void JSONTable(String name, List<String> columns) {

@@ -4,6 +4,7 @@ import java.nio.file.*;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 
 import model.FileTable;
@@ -94,12 +95,49 @@ public class JSONTable implements FileTable {
 
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
-		throw new UnsupportedOperationException();
+		
+		if(degree()-1 != fields.size()){
+			throw new IllegalArgumentException("Incorrect degree");
+		}
+
+		ObjectNode dataNode = (ObjectNode) rootNode.get("Data");
+
+		// Hit
+		if(dataNode.get(key) != null){
+
+			JsonNode removedNode = dataNode.remove(key);
+			@SuppressWarnings("rawtypes")
+			List temp = mapper.convertValue(removedNode.get(key), List.class);
+
+			dataNode.putPOJO(key, fields);
+
+			flush();
+			return temp;
+		}
+
+		// Miss
+		dataNode.putPOJO(key, fields);
+
+		flush();
+		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<Object> get(String key) {
-		throw new UnsupportedOperationException();
+
+		ObjectNode dataNode = (ObjectNode) rootNode.get("Data");
+
+		if(dataNode.get(key) != null){
+
+			JsonNode temp = dataNode.get(key);
+			@SuppressWarnings("rawtypes")
+			List fields = mapper.convertValue(temp.get(key), List.class);
+			
+			return fields;
+		}
+
+		return null;
 	}
 
 	@Override
@@ -115,30 +153,20 @@ public class JSONTable implements FileTable {
 
 	@Override
 	public int size() {
-		try{
-			List<String> records = Files.readAllLines(JSONTable);
-			return records.size()-1;
-		} catch(Exception e){
-			throw new RuntimeException(e);
-		}
+		return rootNode.get("Data").size();
 	}
 
 	@Override
 	public int hashCode() {
 		// Create a new list
 		int fingerprint = 0;
-		List<String> rows = new ArrayList<String>();
 
-		// Write all the lines to the file
-		try {
-			rows  = Files.readAllLines(JSONTable);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		JsonNode dataNode = rootNode.get("Data");
 
-		// Add the fingerprint for each string decoded to a row
-		for(int i = 1; i < rows.size(); i++){
-			
+		Iterator<String> fieldNames = dataNode.fieldNames();
+		while(fieldNames.hasNext()){
+			String nextNode = fieldNames.next();
+			fingerprint += nextNode.hashCode() ^ mapper.convertValue(dataNode.get(nextNode), List.class).hashCode();
 		}
 
 		return fingerprint;
@@ -155,7 +183,40 @@ public class JSONTable implements FileTable {
 
 	@Override
 	public Iterator<Row> iterator() {
-		throw new UnsupportedOperationException();
+		try {
+			// Create a dataNode as a starting point
+			var dataNode = rootNode.get("Data");
+
+			// Create iterator
+			Iterator<Map.Entry<String, JsonNode>> fields = dataNode.fields();
+			
+			// Initalize list to return iterator on
+			List<Row> newList = new ArrayList<Row>();
+
+			while(fields.hasNext()){
+				
+				Map.Entry<String, JsonNode> field = fields.next();
+
+				String key = field.getKey();
+				List<Object> fieldList  = new ArrayList<Object>();
+           	 	
+				ArrayNode tempFields = (ArrayNode) dataNode.get(key);
+
+				// Add columns to the node
+				for (JsonNode fieldx : tempFields) {
+					fieldList.add(fieldx.asText());
+				}
+				
+            	Row row = new Row(key, fieldList);
+
+           	 	// Add the row to the list
+           		newList.add(row);
+			}
+
+			return newList.iterator();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -165,24 +226,19 @@ public class JSONTable implements FileTable {
 
 	@Override
 	public List<String> columns() {
-		try{
-			// Create list to return
-			List<String> columnNames = new ArrayList<String>();
+		// Create list to return
+		List<String> columnNames = new ArrayList<String>();
 
-			// retrieve the arrayNode column_names from the metaData node
-			JsonNode metaNode = rootNode.get("Metadata");
-			ArrayNode columnNamesNode = (ArrayNode) metaNode.get("Column_names");
+		// retrieve the arrayNode column_names from the metaData node
+		JsonNode metaNode = rootNode.get("Metadata");
+		ArrayNode columnNamesNode = (ArrayNode) metaNode.get("Column_names");
 
-			// Add columns to the node
-			for (JsonNode columnNameNode : columnNamesNode) {
-				columnNames.add(columnNameNode.asText());
-			}
-			
-			return columnNames;
-
-		} catch(Exception e){
-			throw new RuntimeException(e);
+		// Add columns to the node
+		for (JsonNode columnNameNode : columnNamesNode) {
+			columnNames.add(columnNameNode.asText());
 		}
+		
+		return columnNames;
 	}
 
 	@Override

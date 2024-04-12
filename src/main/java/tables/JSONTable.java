@@ -106,7 +106,7 @@ public class JSONTable implements FileTable {
 
 			JsonNode removedNode = dataNode.remove(key);
 			@SuppressWarnings("rawtypes")
-			List temp = mapper.convertValue(removedNode.get(key), List.class);
+			List temp = mapper.convertValue(removedNode, List.class);
 
 			dataNode.putPOJO(key, fields);
 
@@ -131,7 +131,7 @@ public class JSONTable implements FileTable {
 
 			JsonNode temp = dataNode.get(key);
 			@SuppressWarnings("rawtypes")
-			List fields = mapper.convertValue(temp.get(key), List.class);
+			List fields = mapper.convertValue(temp, List.class);
 			
 			return fields;
 		}
@@ -148,7 +148,7 @@ public class JSONTable implements FileTable {
 
 			JsonNode temp = dataNode.remove(key);
 			@SuppressWarnings("rawtypes")
-			List fields = mapper.convertValue(temp.get(key), List.class);
+			List fields = mapper.convertValue(temp, List.class);
 			
 			return fields;
 		}
@@ -194,40 +194,25 @@ public class JSONTable implements FileTable {
 
 	@Override
 	public Iterator<Row> iterator() {
-		try {
-			// Create a dataNode as a starting point
-			var dataNode = rootNode.get("Data");
+	
+		// Create a dataNode as a starting point
+		var dataNode = rootNode.get("Data");
+		List<Row> newList = new ArrayList<Row>();
 
-			// Create iterator
-			Iterator<Map.Entry<String, JsonNode>> fields = dataNode.fields();
+		// Create iterator
+		var fieldIterator = dataNode.fieldNames();
+		
+
+		while(fieldIterator.hasNext()){
+				
+			String key = fieldIterator.next();
 			
-			// Initalize list to return iterator on
-			List<Row> newList = new ArrayList<Row>();
-
-			while(fields.hasNext()){
-				
-				Map.Entry<String, JsonNode> field = fields.next();
-
-				String key = field.getKey();
-				List<Object> fieldList  = new ArrayList<Object>();
-           	 	
-				ArrayNode tempFields = (ArrayNode) dataNode.get(key);
-
-				// Add columns to the node
-				for (JsonNode fieldx : tempFields) {
-					fieldList.add(fieldx.asText());
-				}
-				
-            	Row row = new Row(key, fieldList);
-
-           	 	// Add the row to the list
-           		newList.add(row);
-			}
-
-			return newList.iterator();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+          	Row row = new Row(key, mapper.convertValue(dataNode.get(key), List.class));
+         	
+         	newList.add(row);
 		}
+
+		return newList.iterator();
 	}
 
 	@Override

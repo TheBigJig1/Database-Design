@@ -1,24 +1,62 @@
 package tables;
 
+import java.io.FileWriter;
 import java.nio.file.*;
 import java.util.Iterator;
 import java.util.List;
 
 import model.FileTable;
 import model.Row;
-import org.dom4j.io.XMLWriter;
+
+import org.dom4j.*;
+import org.dom4j.io.*;
 
 public class XMLTable implements FileTable {
 	
 	private static final Path basePath = Paths.get("db", "tables");
 	private Path XMLTable;
+	private Document doc;
 
 	public XMLTable(String name, List<String> columns) {
-		throw new UnsupportedOperationException();
+		try{
+			// Create a base directory in DB 
+			Files.createDirectories(basePath);
+			XMLTable = basePath.resolve(name + ".xml");
+
+			// Create the file if it does not already exist
+			if(Files.notExists(XMLTable)){
+				Files.createFile(XMLTable);
+			}
+
+			doc = DocumentHelper.createDocument();
+			var root = doc.addElement(name);
+			var tableColumns = root.addElement("Columns");
+			root.addElement("Rows");
+
+			for(String column : columns){
+				tableColumns.addElement(column);
+			}
+
+			flush();
+
+		} catch(Exception e){
+			throw new RuntimeException(e);
+		}
 	}
 
 	public XMLTable(String name) {
-		throw new UnsupportedOperationException();
+		try {
+			XMLTable = basePath.resolve(name + ".xml");
+	
+			if(!Files.exists(XMLTable)){
+				throw new IllegalArgumentException();
+			}
+	
+			doc = new SAXReader().read(XMLTable.toFile());
+	
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
@@ -28,7 +66,13 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public void flush() {
-		throw new UnsupportedOperationException();
+		try {
+			var writer = new XMLWriter(new FileWriter(XMLTable.toFile()));
+			writer.write(doc);
+			writer.close();
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override

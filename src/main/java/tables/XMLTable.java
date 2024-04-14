@@ -92,16 +92,24 @@ public class XMLTable implements FileTable {
 		Element rowsElement = root.element("Rows");
 		List<Element> rows = rowsElement.elements("Row");
 
-		List<String> oldFieldString = null;
+		List<Object> returnFields = null;
 
 		// Linear search for the row with the given key
 		for (Element row : rows) {
 			if (row.attributeValue("Key").equals(key)) {
 				// On a hit, remove the old row and store its fields
-				List<Element> columns = row.elements("Field");
-				for (Element column : columns) {
-					oldFieldString = new ArrayList<String>();
-					oldFieldString.add(column.getText());
+				List<Element> cols = row.elements("Field");
+				returnFields = new ArrayList<Object>();
+				for(Element obj : cols){
+					if(obj.attributeValue("Type").equals("String")){
+						returnFields.add(obj.toString());
+					} else if(obj.attributeValue("Type").equals("Boolean")){
+						returnFields.add(Boolean.parseBoolean(obj.toString()));
+					} else if(obj.attributeValue("Type").equals("Null")){
+						returnFields.add(null);
+					} else if(obj.attributeValue("Type").equals("Integer")){
+						returnFields.add(Integer.parseInt(obj.toString()));
+					}
 				}
 				row.detach();
 				break;
@@ -111,41 +119,54 @@ public class XMLTable implements FileTable {
 		// Add the new row
 		Element newRow = rowsElement.addElement("Row");
 		newRow.addAttribute("Key", key);
-		for (Object field : fields) {
-			newRow.addElement("Field").addText(field.toString());
+
+		for (Object obj : fields) {
+			Element tempField = newRow.addElement("Field");
+			tempField.addText(obj.toString());
+
+			if(obj instanceof String){
+				tempField.addAttribute("Type", "String");
+			} else if(obj instanceof Boolean){
+				tempField.addAttribute("Type", "Boolean");
+			}  else if(obj instanceof Integer){
+				tempField.addAttribute("Type", "Integer");
+			} else {
+				tempField.addAttribute("Type", "Null");
+			}
 		}
 
 		flush();
-
-		if(oldFieldString == null){
-			return null;
-		}
-		// Parse the List of fields to a List of Objects
-		List<Object> returnFields = new ArrayList<Object>();
-		for(String temp : oldFieldString) {
-			if (temp.equalsIgnoreCase("true") || temp.equalsIgnoreCase("false")) {
-				returnFields.add(Boolean.parseBoolean(temp));
-			} else if (temp.equalsIgnoreCase("null")) {
-				returnFields.add(null);
-			} else {
-				try {
-					returnFields.add(Integer.parseInt(temp));
-				} catch (NumberFormatException e) {
-					try {
-						returnFields.add(Double.parseDouble(temp));
-					} catch (NumberFormatException ex) {
-						returnFields.add(temp);
-					}
-				}
-			}
-		}
 
 		return returnFields;
 	}
 
 	@Override
 	public List<Object> get(String key) {
-		throw new UnsupportedOperationException();
+
+		Element root = doc.getRootElement();
+		Element rowsElement = root.element("Rows");
+		List<Element> rows = rowsElement.elements("Row");
+
+		for(Element target : rows) {
+			if(target.attributeValue("Key").equals(key)){
+				List<Element> fields = target.elements("Field");
+				List<Object> returnFields = new ArrayList<Object>();
+				for(Element obj : fields){
+					if(obj.attributeValue("Type").equals("String")){
+						returnFields.add(obj.toString());
+					} else if(obj.attributeValue("Type").equals("Boolean")){
+						returnFields.add(Boolean.parseBoolean(obj.toString()));
+					} else if(obj.attributeValue("Type").equals("Null")){
+						returnFields.add(null);
+					} else if(obj.attributeValue("Type").equals("Integer")){
+						returnFields.add(Integer.parseInt(obj.toString()));
+					}
+				}
+				return returnFields;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
@@ -173,18 +194,35 @@ public class XMLTable implements FileTable {
 		int fingerprint = 0;
 
 		Element root = doc.getRootElement();
+		Element x = root.element("Rows");
+		List<Element> rows = x.elements("Row");
 
-		List<Element> Rows = root.elements("Rows");
-		Iterator<Element> fieldNames = Rows.iterator();
+		Iterator<Element> fieldNames = rows.iterator();
 
 		while(fieldNames.hasNext()){
-			Element nextData = fieldNames.next();
-			List<Object> fields = new ArrayList<Object>();
+			Element el = fieldNames.next();
+			List<Object> rowFields = new ArrayList<Object>();
+			List<Element> fields = el.elements("Field");
 
-			String key = nextData.attributeValue("key");
+			String key = el.attributeValue("key");
+			if(key == null){
+				continue;
+			}
 
-			//Row temp = new Row(key, );
-			//fingerprint += temp.hashCode();
+			for(Element obj : fields){
+				if(obj.attributeValue("type").equals("String")){
+					rowFields.add(obj.toString());
+				} else if(obj.attributeValue("type").equals("Boolean")){
+					rowFields.add(Boolean.parseBoolean(obj.toString()));
+				} else if(obj.attributeValue("type").equals("Null")){
+					rowFields.add(null);
+				} else if(obj.attributeValue("type").equals("Integer")){
+					rowFields.add(Integer.parseInt(obj.toString()));
+				}
+			}
+			
+			Row temp = new Row(key, rowFields);
+			fingerprint += temp.hashCode();
 		}
 
 		return fingerprint;

@@ -8,6 +8,7 @@ import java.util.List;
 
 import model.FileTable;
 import model.Row;
+import model.Table;
 
 import org.dom4j.*;
 import org.dom4j.io.*;
@@ -83,7 +84,63 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
-		throw new UnsupportedOperationException();
+		if(degree()-1 != fields.size()){
+			throw new IllegalArgumentException("Incorrect degree");
+		}
+
+		Element root = doc.getRootElement();
+		Element rowsElement = root.element("Rows");
+		List<Element> rows = rowsElement.elements("Row");
+
+		List<String> oldFieldString = null;
+
+		// Linear search for the row with the given key
+		for (Element row : rows) {
+			if (row.attributeValue("Key").equals(key)) {
+				// On a hit, remove the old row and store its fields
+				List<Element> columns = row.elements("Field");
+				for (Element column : columns) {
+					oldFieldString = new ArrayList<String>();
+					oldFieldString.add(column.getText());
+				}
+				row.detach();
+				break;
+			}
+		}
+	
+		// Add the new row
+		Element newRow = rowsElement.addElement("Row");
+		newRow.addAttribute("Key", key);
+		for (Object field : fields) {
+			newRow.addElement("Field").addText(field.toString());
+		}
+
+		flush();
+
+		if(oldFieldString == null){
+			return null;
+		}
+		// Parse the List of fields to a List of Objects
+		List<Object> returnFields = new ArrayList<Object>();
+		for(String temp : oldFieldString) {
+			if (temp.equalsIgnoreCase("true") || temp.equalsIgnoreCase("false")) {
+				returnFields.add(Boolean.parseBoolean(temp));
+			} else if (temp.equalsIgnoreCase("null")) {
+				returnFields.add(null);
+			} else {
+				try {
+					returnFields.add(Integer.parseInt(temp));
+				} catch (NumberFormatException e) {
+					try {
+						returnFields.add(Double.parseDouble(temp));
+					} catch (NumberFormatException ex) {
+						returnFields.add(temp);
+					}
+				}
+			}
+		}
+
+		return returnFields;
 	}
 
 	@Override
@@ -104,20 +161,42 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public int size() {
-
-		
-
-		throw new UnsupportedOperationException();
+		Element root = doc.getRootElement();
+		Element rowsElement = root.element("Rows");
+		List<Element> rowElements = rowsElement.elements("Row");
+		return rowElements.size();
 	}
 
 	@Override
 	public int hashCode() {
-		throw new UnsupportedOperationException();
+		// Create a new list
+		int fingerprint = 0;
+
+		Element root = doc.getRootElement();
+
+		List<Element> Rows = root.elements("Rows");
+		Iterator<Element> fieldNames = Rows.iterator();
+
+		while(fieldNames.hasNext()){
+			Element nextData = fieldNames.next();
+			List<Object> fields = new ArrayList<Object>();
+
+			String key = nextData.attributeValue("key");
+
+			//Row temp = new Row(key, );
+			//fingerprint += temp.hashCode();
+		}
+
+		return fingerprint;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		throw new UnsupportedOperationException();
+		if(obj instanceof Table && obj.hashCode() == this.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
@@ -151,6 +230,6 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public String toString() {
-		throw new UnsupportedOperationException();
+		return toTabularView(false);
 	}
 }

@@ -2,6 +2,7 @@ package apps;
 
 
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -11,6 +12,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.dom4j.*;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -24,56 +29,45 @@ import tables.CSVTable;
 @SuppressWarnings("unused")
 public class Sandbox {
 
-	private static final Path basePath = Paths.get("db", "tables");
-	private static Path JSONTable;
-	private static ObjectNode rootNode;
-	private static final JsonMapper mapper = new JsonMapper();
+	public static final Path basePath = Paths.get("db", "tables");
+	public static Path XMLTable;
+	public static Document doc;
 	public static void main(String[] args) {
 		
 		String name = "test";
-		List<String> columns = Arrays.asList("ExKey", "ExField1", "ExField2", "ExField3");
+		List<String> columnsList = Arrays.asList("ExKey", "ExField1", "ExField2", "ExField3");
 
-		//JSONTable(name, columns);
+		XMLTable("Example", columnsList);
 
-		String key = "Page";
-		JsonNode dataNode = rootNode.get("Data");
+		List<String> cols = columns();
 
-		if(dataNode.get(key) != null){
-
-			JsonNode temp = dataNode.get(key);
-			@SuppressWarnings("rawtypes")
-			List fields = mapper.convertValue(temp.get(key), List.class);
-
-			for(Object field : fields){
-				System.out.println(field);
-			}
+		System.out.println("Columns:");
+		for(String col : cols){
+			System.out.println(col);
 		}
+		System.out.println("Done");
+		
 	}
 
-	public static void JSONTable(String name, List<String> columns) {
+	public static void XMLTable(String name, List<String> columns) {
 		try{
 			// Create a base directory in DB 
 			Files.createDirectories(basePath);
-			JSONTable = basePath.resolve(name + ".json");
+			XMLTable = basePath.resolve(name + ".xml");
 
 			// Create the file if it does not already exist
-			if(Files.notExists(JSONTable)){
-				Files.createFile(JSONTable);
+			if(Files.notExists(XMLTable)){
+				Files.createFile(XMLTable);
 			}
 
-			// Initialize RootNode
-			rootNode = mapper.createObjectNode();
+			doc = DocumentHelper.createDocument();
+			var root = doc.addElement("Table");
+			var tableColumns = root.addElement("Columns");
+			root.addElement("Rows");
 
-			// Put a new ObjectNode at the "Data" property of the rootNode
-			ObjectNode metadataNode = rootNode.putObject("MetaData");
-			rootNode.putObject("Data");
-
-			ArrayNode columnNamesNode = metadataNode.putArray("Column_names");
 			for(String column : columns){
-				columnNamesNode.add(column);
+				tableColumns.addElement("Column").addText(column);
 			}
-
-			//mapper.writeValue(JSONTable.toFile(), rootNode);
 
 			flush();
 
@@ -82,33 +76,37 @@ public class Sandbox {
 		}
 	}
 
+	public interface Flushable {
+		void flush();
+	}
+
 	public static void flush() {
 		try {
-			mapper.writerWithDefaultPrettyPrinter().writeValue(JSONTable.toFile(), rootNode);
+			OutputFormat format = OutputFormat.createPrettyPrint();
+			var writer = new XMLWriter(new FileWriter(XMLTable.toFile()), format);
+			writer.write(doc);
+			writer.close();
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
-	public List<String> columns() {
-		try{
-			// Create list to return
-			List<String> columnNames = new ArrayList<String>();
+	public static List<String> columns() {
+		// Create list to return
+		List<String> columnNames = new ArrayList<String>();
 
-			// retrieve the arrayNode column_names from the metaData node
-			JsonNode metaNode = rootNode.get("Metadata");
-			ArrayNode columnNamesNode = (ArrayNode) metaNode.get("Column_names");
+		// get the root and the columns Element
+		Element root = doc.getRootElement();
+		Element columnsElement = root.element("Columns");
 
-			// Add columns to the node
-			for (JsonNode columnNameNode : columnNamesNode) {
-				columnNames.add(columnNameNode.asText());
-			}
-			
-			return columnNames;
+		List<Element> columns = columnsElement.elements("Column");
 
-		} catch(Exception e){
-			throw new RuntimeException(e);
+		// Add columns to the node
+		for (Element col : columns) {
+			columnNames.add(col.getText());
 		}
+		
+		return columnNames;
 	}
 
 }

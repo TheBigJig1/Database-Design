@@ -35,7 +35,7 @@ public class XMLTable implements FileTable {
 			root.addElement("Rows");
 
 			for(String column : columns){
-				tableColumns.addElement(column);
+				tableColumns.addElement("Column").addText(column);
 			}
 
 			flush();
@@ -98,11 +98,15 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public int degree() {
-		throw new UnsupportedOperationException();
+		List<String> s = columns();
+		return s.size();
 	}
 
 	@Override
 	public int size() {
+
+		
+
 		throw new UnsupportedOperationException();
 	}
 

@@ -25,6 +25,7 @@ import model.Row;
 import model.Table;
 import tables.HashTable;
 import tables.CSVTable;
+import tables.XMLTable;
 
 @SuppressWarnings("unused")
 public class Sandbox {
@@ -37,76 +38,9 @@ public class Sandbox {
 		String name = "test";
 		List<String> columnsList = Arrays.asList("ExKey", "ExField1", "ExField2", "ExField3");
 
-		XMLTable("Example", columnsList);
+		//XMLTable("Example", columnsList);
 
-		List<String> cols = columns();
-
-		System.out.println("Columns:");
-		for(String col : cols){
-			System.out.println(col);
-		}
-		System.out.println("Done");
 		
-	}
-
-	public static void XMLTable(String name, List<String> columns) {
-		try{
-			// Create a base directory in DB 
-			Files.createDirectories(basePath);
-			XMLTable = basePath.resolve(name + ".xml");
-
-			// Create the file if it does not already exist
-			if(Files.notExists(XMLTable)){
-				Files.createFile(XMLTable);
-			}
-
-			doc = DocumentHelper.createDocument();
-			var root = doc.addElement("Table");
-			var tableColumns = root.addElement("Columns");
-			root.addElement("Rows");
-
-			for(String column : columns){
-				tableColumns.addElement("Column").addText(column);
-			}
-
-			flush();
-
-		} catch(Exception e){
-			throw new RuntimeException(e);
-		}
-	}
-
-	public interface Flushable {
-		void flush();
-	}
-
-	public static void flush() {
-		try {
-			OutputFormat format = OutputFormat.createPrettyPrint();
-			var writer = new XMLWriter(new FileWriter(XMLTable.toFile()), format);
-			writer.write(doc);
-			writer.close();
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	public static List<String> columns() {
-		// Create list to return
-		List<String> columnNames = new ArrayList<String>();
-
-		// get the root and the columns Element
-		Element root = doc.getRootElement();
-		Element columnsElement = root.element("Columns");
-
-		List<Element> columns = columnsElement.elements("Column");
-
-		// Add columns to the node
-		for (Element col : columns) {
-			columnNames.add(col.getText());
-		}
-		
-		return columnNames;
 	}
 
 }

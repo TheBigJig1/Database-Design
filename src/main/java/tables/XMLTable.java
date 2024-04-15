@@ -133,7 +133,21 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public List<Object> remove(String key) {
-		throw new UnsupportedOperationException();
+		Element root = doc.getRootElement();
+		Element rowsElement = root.element("Rows");
+		List<Element> rows = rowsElement.elements("Row");
+
+		for(Element target : rows) {
+			if (target.attributeValue("Key").equals(key)) {
+				
+				List<Element> fields = target.elements("Field");
+				List<Object> returnFields = decodeFields(fields);
+				target.detach();
+				return returnFields;
+			}
+		}
+
+		return null;
 	}
 
 	public List<Object> decodeFields(List<Element> fields){
@@ -229,7 +243,17 @@ public class XMLTable implements FileTable {
 
 	@Override
 	public Iterator<Row> iterator() {
-		throw new UnsupportedOperationException();
+		List<Row> rowList = new ArrayList<Row>();
+
+		Element x = doc.getRootElement().element("Rows");
+		
+		for(Element row : x.elements()){
+			List<Element> fields = row.elements("Field");
+			Row temp = new Row(row.attributeValue("Key"), decodeFields(fields));
+			rowList.add(temp);
+		}
+		
+		return rowList.iterator();
 	}
 
 	@Override

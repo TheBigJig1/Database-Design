@@ -26,21 +26,30 @@ import model.Table;
 import tables.HashTable;
 import tables.CSVTable;
 import tables.XMLTable;
+import tables.JSONTable;
 
 @SuppressWarnings("unused")
 public class Sandbox {
-
-	public static final Path basePath = Paths.get("db", "tables");
-	public static Path XMLTable;
-	public static Document doc;
 	public static void main(String[] args) {
 		
-		String name = "test";
-		List<String> columnsList = Arrays.asList("ExKey", "ExField1", "ExField2", "ExField3");
+		String name = "Football";
+		List<String> columnsList = Arrays.asList("Name", "Team", "Position", "Yards/Game");
 
-		//XMLTable("Example", columnsList);
+		@SuppressWarnings("resource")
+		Table example = new XMLTable(name);
+		example.clear();
 
+		List<Object> row1 = Arrays.asList("Ravens", "Linebacker", null);
+		List<Object> row2 = Arrays.asList("Colts", "Kickers", 45);
+		List<Object> row3 = Arrays.asList("WVU", "Quarterback", 180);
+
+
+		example.put("Ray_Lewis", row1);
+		example.put("Pat_McAfee", row2);
+		example.put("Garrett_Greene", row3);
+		example.put("Ray_Lewis", row1);
 		
+		System.out.println(example.toString());
 	}
 
 }

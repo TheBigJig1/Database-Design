@@ -2,9 +2,10 @@ package model;
 
 import java.util.List;
 import java.util.Collections;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public record Row(String key, List<Object> fields) implements Comparable<Row> {
+public record Row(String key, List<Object> fields) implements Comparable<Row>, Serializable{
 	public Row {
 		if (fields != null){
 			fields = Collections.unmodifiableList(new ArrayList<>(fields));

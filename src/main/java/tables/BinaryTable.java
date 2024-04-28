@@ -1,6 +1,15 @@
 package tables;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.util.HexFormat;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,19 +17,41 @@ import model.FileTable;
 import model.Row;
 
 public class BinaryTable implements FileTable {
-	/*
-	 * TODO: For Module 6, finish this stub.
-	 */
+	
+	private static final Path basePath = Paths.get("db", "tables");
+	private Path root;
+	private Path dataPath;
+	private Path metadataPath;
 
 	private static final boolean BYTES_MODE = false;
 	private static final boolean ZIP_MODE = false;
 
 	public BinaryTable(String name, List<String> columns) {
-		throw new UnsupportedOperationException();
+		try {
+			root = basePath.resolve(name);
+			Files.createDirectories(root);
+
+			dataPath = root.resolve("Data");
+			metadataPath = root.resolve("Metadata");
+
+			Files.createDirectories(dataPath);
+			Files.createDirectories(metadataPath);
+
+			Files.write(metadataPath.resolve("columns"), columns);
+
+		} catch (Exception e){ 
+			throw new RuntimeException(e);
+		}
 	}
 
 	public BinaryTable(String name) {
-		throw new UnsupportedOperationException();
+		root = basePath.resolve(name);
+		if (Files.notExists(root)){
+			throw new IllegalArgumentException("Missing table: " + name);
+		}
+
+		dataPath = root.resolve("Data");
+		metadataPath = root.resolve("Metadata");
 	}
 
 	@Override
@@ -34,31 +65,91 @@ public class BinaryTable implements FileTable {
 	}
 
 	private static void writeInt(Path path, int i) {
-		throw new UnsupportedOperationException();
+		try (
+			var out = new ObjectOutputStream(Files.newOutputStream(path));
+		) {
+			out.writeInt(i);
+			out.flush();
+
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static int readInt(Path path) {
-		throw new UnsupportedOperationException();
+		try (
+			var in = new ObjectInputStream(Files.newInputStream(path));
+		) {
+			var i = in.readInt();
+			return i;
+
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static void writeRow(Path path, Row row) {
-		throw new UnsupportedOperationException();
+		try (
+			var out = new ObjectOutputStream(Files.newOutputStream(path));
+		) {
+			Path parentDir = path.getParent();
+			if(parentDir != null){
+				Files.createDirectories(parentDir);
+			}
+
+			out.writeObject(row);
+
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static Row readRow(Path path) {
-		throw new UnsupportedOperationException();
+		try (
+			var in = new ObjectInputStream(Files.newInputStream(path));
+		) {
+			return (Row) in.readObject();
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static void deleteRow(Path path) {
-		throw new UnsupportedOperationException();
+		try {
+			Files.delete(path);
+			
+			if(path.getParent().getNameCount() == 0){
+				Files.delete(path.getParent());
+			}
+
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private String digestFunction(Object key) {
-		throw new UnsupportedOperationException();
+	@SuppressWarnings("unused")
+	private String digestFunction(String key) {
+		try {
+			var sha1 = MessageDigest.getInstance("SHA-1");
+
+			sha1.update("salt-".getBytes());
+			sha1.update(key.getBytes());
+
+			var digest = sha1.digest();
+
+			var hex = HexFormat.of();
+			return hex.formatHex(digest);
+
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	private Path pathOf(String digest) {
-		throw new UnsupportedOperationException();
+		String prefix = digest.substring(0, 1);
+		String suffix = digest.substring(2);
+		return dataPath.resolve(prefix).resolve(suffix);
 	}
 
 	@Override

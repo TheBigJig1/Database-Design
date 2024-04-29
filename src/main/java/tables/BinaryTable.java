@@ -16,6 +16,7 @@ import java.util.List;
 
 import model.FileTable;
 import model.Row;
+import model.Table;
 
 public class BinaryTable implements FileTable {
 	
@@ -24,7 +25,9 @@ public class BinaryTable implements FileTable {
 	private Path dataPath;
 	private Path metadataPath;
 
+	@SuppressWarnings("unused")
 	private static final boolean BYTES_MODE = false;
+	@SuppressWarnings("unused")
 	private static final boolean ZIP_MODE = false;
 
 	public BinaryTable(String name, List<String> columns) {
@@ -38,7 +41,7 @@ public class BinaryTable implements FileTable {
 			Files.createDirectories(dataPath);
 			Files.createDirectories(metadataPath);
 
-			Files.write(metadataPath.resolve("columns"), columns);
+			Files.write(metadataPath.resolve("Columns"), columns);
 
 		} catch (Exception e){ 
 			throw new RuntimeException(e);
@@ -107,15 +110,15 @@ public class BinaryTable implements FileTable {
 	}
 
 	private static void writeRow(Path path, Row row) {
-		try (
-			var out = new ObjectOutputStream(Files.newOutputStream(path));
-		) {
-			Path parentDir = path.getParent();
-			if(parentDir != null){
-				Files.createDirectories(parentDir);
+		try {
+			if(path.getParent() != null){
+				Files.createDirectories(path.getParent());
 			}
 
+			var out = new ObjectOutputStream(Files.newOutputStream(path));
 			out.writeObject(row);
+
+			out.close();
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -177,11 +180,12 @@ public class BinaryTable implements FileTable {
 
 		String digest = digestFunction(key);
 		Path keyPath = pathOf(digest);
+		int curSize = readInt(metadataPath.resolve("Size"));
 
 		Row obj = new Row(key, fields);
 
 		// Hit
-		if(!Files.notExists(keyPath)){
+		if(Files.exists(keyPath)){
 			Row temp = readRow(keyPath);
 			writeRow(keyPath, obj);
 
@@ -192,44 +196,79 @@ public class BinaryTable implements FileTable {
 
 		// Miss
 		writeRow(keyPath, obj);
-		writeInt(metadataPath.resolve("Size"), readInt(metadataPath.resolve("Size")) + 1);
+		writeInt(metadataPath.resolve("Size"), curSize + 1);
 		writeInt(metadataPath.resolve("Fingerprint"), hashCode());
 
 		return null;
-
 	}
 
 	@Override
 	public List<Object> get(String key) {
+		// Get keypath
 		String digest = digestFunction(key);
 		Path keyPath = pathOf(digest);
 
-		return null;
+		// Check if file exists
+		if(Files.exists(keyPath)){
+			Row temp = readRow(keyPath);
+			return temp.fields();
+		} else {
+			return null;
+		}
 	}
 
 	@Override
 	public List<Object> remove(String key) {
-		throw new UnsupportedOperationException();
+		// Get keypath
+		String digest = digestFunction(key);
+		Path keyPath = pathOf(digest);
+		int curSize = readInt(metadataPath.resolve("Size"));
+
+		// Check if file exists
+		if(Files.exists(keyPath)){
+			// create temp row, remove row
+			Row temp = readRow(keyPath);
+			deleteRow(keyPath);
+
+			// Update size/fingerprint
+			writeInt(metadataPath.resolve("Size"), curSize - 1);
+			writeInt(metadataPath.resolve("Fingerprint"), hashCode());
+
+			return temp.fields();
+		} else {
+			return null;
+		}
 	}
 
 	@Override
 	public int degree() {
-		throw new UnsupportedOperationException();
+		return columns().size();
 	}
 
 	@Override
 	public int size() {
-		throw new UnsupportedOperationException();
+		return readInt(metadataPath.resolve("Size"));
 	}
 
 	@Override
 	public int hashCode() {
-		throw new UnsupportedOperationException();
+		try {
+			return Files.walk(dataPath)
+				.filter(file -> !Files.isDirectory(file))
+				.mapToInt(path -> readRow(path).hashCode())
+				.sum();
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		throw new UnsupportedOperationException();
+		if(obj instanceof Table && obj.hashCode() == this.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
@@ -251,9 +290,14 @@ public class BinaryTable implements FileTable {
 
 	@Override
 	public List<String> columns() {
-		var colsPath = metadataPath.resolve("Columns");
+		Path colsPath = metadataPath.resolve("Columns");
 
-		colsPath.
+		try {
+			List<String> columns = Files.readAllLines(colsPath);
+			return columns;
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override

@@ -165,7 +165,6 @@ public class JSONTable implements FileTable {
 
 	@Override
 	public int hashCode() {
-		// Create a new list
 		int fingerprint = 0;
 
 		JsonNode dataNode = rootNode.get("Data");

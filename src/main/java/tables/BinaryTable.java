@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
+import java.util.Comparator;
 import java.util.HexFormat;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,7 +57,24 @@ public class BinaryTable implements FileTable {
 
 	@Override
 	public void clear() {
-		throw new UnsupportedOperationException();
+		try {
+			Files.walk(dataPath)
+				.skip(1)
+				.sorted(Comparator.reverseOrder())
+				.forEach(path -> {
+					try {
+						Files.delete(path);
+					} catch (IOException e) {
+						throw new IllegalStateException(e);
+					}
+			});
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+
+		writeInt(metadataPath.resolve("Size"), 0);
+		writeInt(metadataPath.resolve("Fingerprint"), 0);
+
 	}
 
 	@Override
@@ -128,7 +146,6 @@ public class BinaryTable implements FileTable {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	private String digestFunction(String key) {
 		try {
 			var sha1 = MessageDigest.getInstance("SHA-1");
@@ -154,12 +171,40 @@ public class BinaryTable implements FileTable {
 
 	@Override
 	public List<Object> put(String key, List<Object> fields) {
-		throw new UnsupportedOperationException();
+		if(degree()-1 != fields.size()){
+			throw new IllegalArgumentException("Incorrect degree");
+		}
+
+		String digest = digestFunction(key);
+		Path keyPath = pathOf(digest);
+
+		Row obj = new Row(key, fields);
+
+		// Hit
+		if(!Files.notExists(keyPath)){
+			Row temp = readRow(keyPath);
+			writeRow(keyPath, obj);
+
+			writeInt(metadataPath.resolve("Fingerprint"), hashCode());
+
+			return temp.fields();
+		}
+
+		// Miss
+		writeRow(keyPath, obj);
+		writeInt(metadataPath.resolve("Size"), readInt(metadataPath.resolve("Size")) + 1);
+		writeInt(metadataPath.resolve("Fingerprint"), hashCode());
+
+		return null;
+
 	}
 
 	@Override
 	public List<Object> get(String key) {
-		throw new UnsupportedOperationException();
+		String digest = digestFunction(key);
+		Path keyPath = pathOf(digest);
+
+		return null;
 	}
 
 	@Override
@@ -189,17 +234,26 @@ public class BinaryTable implements FileTable {
 
 	@Override
 	public Iterator<Row> iterator() {
-		throw new UnsupportedOperationException();
+		try {
+			return Files.walk(dataPath)
+				.filter(file -> !Files.isDirectory(file))
+				.map(path -> readRow(dataPath))	
+				.iterator();
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public String name() {
-		throw new UnsupportedOperationException();
+		return root.getFileName().toString();
 	}
 
 	@Override
 	public List<String> columns() {
-		throw new UnsupportedOperationException();
+		var colsPath = metadataPath.resolve("Columns");
+
+		colsPath.
 	}
 
 	@Override

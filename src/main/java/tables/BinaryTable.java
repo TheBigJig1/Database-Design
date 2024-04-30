@@ -1,9 +1,9 @@
 package tables;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.HexFormat;
@@ -25,9 +25,7 @@ public class BinaryTable implements FileTable {
 	private Path dataPath;
 	private Path metadataPath;
 
-	@SuppressWarnings("unused")
 	private static final boolean BYTES_MODE = false;
-	@SuppressWarnings("unused")
 	private static final boolean ZIP_MODE = false;
 
 	public BinaryTable(String name, List<String> columns) {
@@ -89,8 +87,14 @@ public class BinaryTable implements FileTable {
 		try (
 			var out = new ObjectOutputStream(Files.newOutputStream(path));
 		) {
-			out.writeInt(i);
-			out.flush();
+
+			if(BYTES_MODE) {
+				var bytes = ByteBuffer.allocate(4).putInt(i).array();
+				Files.write(path, bytes);
+			} else {
+				out.writeInt(i);
+				out.flush();
+			}
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -98,12 +102,17 @@ public class BinaryTable implements FileTable {
 	}
 
 	private static int readInt(Path path) {
-		try (
-			var in = new ObjectInputStream(Files.newInputStream(path));
-		) {
-			var i = in.readInt();
-			return i;
-
+		try {
+			if(BYTES_MODE) {
+				var bytes = Files.readAllBytes(path);
+				var buf = ByteBuffer.wrap(bytes).getInt();
+				return buf;
+			} else {
+				try (var in = new ObjectInputStream(Files.newInputStream(path))) {
+					var i = in.readInt();
+					return i;
+				}
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -115,10 +124,15 @@ public class BinaryTable implements FileTable {
 				Files.createDirectories(path.getParent());
 			}
 
-			var out = new ObjectOutputStream(Files.newOutputStream(path));
-			out.writeObject(row);
-
-			out.close();
+			if(BYTES_MODE) {
+				var bytes = row.getBytes();
+				Files.write(path, bytes);
+			} else {
+				var out = new ObjectOutputStream(Files.newOutputStream(path));
+				
+				out.writeObject(row);
+				out.close();
+			}
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -126,11 +140,15 @@ public class BinaryTable implements FileTable {
 	}
 
 	private static Row readRow(Path path) {
-		try (
-			var in = new ObjectInputStream(Files.newInputStream(path));
-		) {
-			return (Row) in.readObject();
-
+		try {
+			if(BYTES_MODE){
+				var bytes = Files.readAllBytes(path);
+				return Row.fromBytes(bytes);
+			} else {
+				try (var in = new ObjectInputStream(Files.newInputStream(path))) {
+					return (Row) in.readObject();
+				}
+			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -271,17 +289,17 @@ public class BinaryTable implements FileTable {
 		}
 	}
 
-	@Override
-	public Iterator<Row> iterator() {
-		try {
-			return Files.walk(dataPath)
-				.filter(file -> !Files.isDirectory(file))
-				.map(path -> readRow(dataPath))	
-				.iterator();
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
+		@Override
+		public Iterator<Row> iterator() {
+			try {
+				return Files.walk(dataPath)
+					.filter(Files::isRegularFile)
+	            	.map(BinaryTable::readRow)
+	            	.iterator();
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
 		}
-	}
 
 	@Override
 	public String name() {
@@ -302,6 +320,6 @@ public class BinaryTable implements FileTable {
 
 	@Override
 	public String toString() {
-		throw new UnsupportedOperationException();
+		return toTabularView(false);
 	}
 }

@@ -199,6 +199,7 @@ public class BinaryTable implements FileTable {
 		String digest = digestFunction(key);
 		Path keyPath = pathOf(digest);
 		int curSize = readInt(metadataPath.resolve("Size"));
+		int curFingerprint = readInt(metadataPath.resolve("Fingerprint"));
 
 		Row obj = new Row(key, fields);
 
@@ -207,7 +208,7 @@ public class BinaryTable implements FileTable {
 			Row temp = readRow(keyPath);
 			writeRow(keyPath, obj);
 
-			writeInt(metadataPath.resolve("Fingerprint"), hashCode());
+			writeInt(metadataPath.resolve("Fingerprint"), curFingerprint - temp.hashCode() + obj.hashCode());
 
 			return temp.fields();
 		}
@@ -215,7 +216,7 @@ public class BinaryTable implements FileTable {
 		// Miss
 		writeRow(keyPath, obj);
 		writeInt(metadataPath.resolve("Size"), curSize + 1);
-		writeInt(metadataPath.resolve("Fingerprint"), hashCode());
+		writeInt(metadataPath.resolve("Fingerprint"), curFingerprint + obj.hashCode());
 
 		return null;
 	}
@@ -241,6 +242,7 @@ public class BinaryTable implements FileTable {
 		String digest = digestFunction(key);
 		Path keyPath = pathOf(digest);
 		int curSize = readInt(metadataPath.resolve("Size"));
+		int curFingerprint = readInt(metadataPath.resolve("Fingerprint"));
 
 		// Check if file exists
 		if(Files.exists(keyPath)){
@@ -250,7 +252,7 @@ public class BinaryTable implements FileTable {
 
 			// Update size/fingerprint
 			writeInt(metadataPath.resolve("Size"), curSize - 1);
-			writeInt(metadataPath.resolve("Fingerprint"), hashCode());
+			writeInt(metadataPath.resolve("Fingerprint"), curFingerprint - temp.hashCode());
 
 			return temp.fields();
 		} else {
@@ -270,14 +272,7 @@ public class BinaryTable implements FileTable {
 
 	@Override
 	public int hashCode() {
-		try {
-			return Files.walk(dataPath)
-				.filter(file -> !Files.isDirectory(file))
-				.mapToInt(path -> readRow(path).hashCode())
-				.sum();
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
-		}
+		return readInt(metadataPath.resolve("Fingerprint"));
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import model.FileTable;
 import model.Row;
@@ -26,6 +27,7 @@ public class BinaryTable implements FileTable {
 	private Path metadataPath;
 
 	private static final boolean BYTES_MODE = false;
+	@SuppressWarnings("unused")
 	private static final boolean ZIP_MODE = false;
 
 	public BinaryTable(String name, List<String> columns) {
@@ -154,12 +156,21 @@ public class BinaryTable implements FileTable {
 		}
 	}
 
-	private static void deleteRow(Path path) {
+	public static void deleteRow(Path path) {
 		try {
+			Path dirPath = path.getParent();
+			int count = 0;
+
 			Files.delete(path);
-			
-			if(path.getParent().getNameCount() == 0){
-				Files.delete(path.getParent());
+
+			try (Stream<Path> files = Files.walk(dirPath)) {
+				count = (int) files.filter(Files::isRegularFile).count();
+			} catch (IOException e){
+				e.printStackTrace();
+			}
+
+			if(count == 0){
+				Files.delete(dirPath);
 			}
 
 		} catch (IOException e) {
@@ -185,7 +196,7 @@ public class BinaryTable implements FileTable {
 	}
 
 	private Path pathOf(String digest) {
-		String prefix = digest.substring(0, 1);
+		String prefix = digest.substring(0, 2);
 		String suffix = digest.substring(2);
 		return dataPath.resolve(prefix).resolve(suffix);
 	}
@@ -238,26 +249,35 @@ public class BinaryTable implements FileTable {
 
 	@Override
 	public List<Object> remove(String key) {
-		// Get keypath
+		
 		String digest = digestFunction(key);
 		Path keyPath = pathOf(digest);
 		int curSize = readInt(metadataPath.resolve("Size"));
 		int curFingerprint = readInt(metadataPath.resolve("Fingerprint"));
+		Row temp = null;
 
-		// Check if file exists
+		// Hit
 		if(Files.exists(keyPath)){
-			// create temp row, remove row
-			Row temp = readRow(keyPath);
-			deleteRow(keyPath);
+			if(BYTES_MODE){
+				try {
+					var bytes = Files.readAllBytes(keyPath);
+					temp = Row.fromBytes(bytes);
+					deleteRow(keyPath);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				temp = readRow(keyPath);
+				deleteRow(keyPath);
+			}
 
-			// Update size/fingerprint
-			writeInt(metadataPath.resolve("Size"), curSize - 1);
 			writeInt(metadataPath.resolve("Fingerprint"), curFingerprint - temp.hashCode());
+			writeInt(metadataPath.resolve("Size"), curSize - 1);
 
 			return temp.fields();
-		} else {
-			return null;
 		}
+
+		return null;
 	}
 
 	@Override

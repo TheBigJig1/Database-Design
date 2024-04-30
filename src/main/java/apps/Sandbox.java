@@ -3,15 +3,16 @@ package apps;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.*;
 import java.math.BigInteger;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.dom4j.*;
 import org.dom4j.io.OutputFormat;
@@ -27,6 +28,7 @@ import tables.HashTable;
 import tables.CSVTable;
 import tables.XMLTable;
 import tables.JSONTable;
+import tables.BinaryTable;
 
 @SuppressWarnings("unused")
 public class Sandbox {
@@ -35,8 +37,9 @@ public class Sandbox {
 		String name = "Football";
 		List<String> columnsList = Arrays.asList("Name", "Team", "Position", "Yards/Game");
 
+		
 		@SuppressWarnings("resource")
-		Table example = new XMLTable(name);
+		Table example = new BinaryTable(name, columnsList);
 		example.clear();
 
 		List<Object> row1 = Arrays.asList("Ravens", "Linebacker", null);
@@ -49,7 +52,9 @@ public class Sandbox {
 		example.put("Garrett_Greene", row3);
 		example.put("Ray_Lewis", row1);
 		
-		System.out.println(example.toString());
+		System.out.println("\n" + example.toString());
+		
+
 	}
 
 }
